@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ui.widget
+package com.emenjivar.luminar.ui.widget
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.PaddingValues

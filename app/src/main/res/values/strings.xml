@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Real time camera filter</string>
+    <string name="app_name">Morse translator</string>
 
     <string name="camera_dialog_access_title">Camera access is needed</string>
     <string name="camera_dialog_access_description">To use camera filters, we need access to your camera. We ensure your privacy and only use it for filters</string>

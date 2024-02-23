@@ -1,7 +1,7 @@
-package com.emenjivar.camerafilter.screen.camera
+package com.emenjivar.luminar.screen.camera
 
 import androidx.annotation.StringRes
-import com.emenjivar.camerafilter.R
+import com.emenjivar.luminar.R
 
 enum class CustomFilter(@StringRes val string: Int) {
     NORMAL(R.string.filter_type_normal),

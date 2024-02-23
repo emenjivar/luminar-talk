@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ui.theme
+package com.emenjivar.luminar.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

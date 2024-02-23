@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.screen.camera
+package com.emenjivar.luminar.screen.camera
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -11,8 +11,6 @@ import androidx.camera.core.ImageProxy
 import org.opencv.android.Utils
 import org.opencv.core.Core
 import org.opencv.core.Mat
-import org.opencv.core.Point
-import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.io.ByteArrayOutputStream
 

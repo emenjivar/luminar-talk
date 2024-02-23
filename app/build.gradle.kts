@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.emenjivar.camerafilter"
+    namespace = "com.emenjivar.luminar"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.emenjivar.camerafilter"
+        applicationId = "com.emenjivar.luminar"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ui.widget
+package com.emenjivar.luminar.ui.widget
 
 import android.graphics.Bitmap
 import android.widget.ImageView

@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.screen.camera
+package com.emenjivar.luminar.screen.camera
 
 import android.annotation.SuppressLint
 import androidx.camera.core.TorchState
@@ -20,9 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.emenjivar.camerafilter.R
-import com.emenjivar.camerafilter.ui.theme.RealTimeCameraFilterTheme
-import com.emenjivar.camerafilter.ui.widget.RoundedButton
+import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.widget.RoundedButton
 
 /**
  * @param rawCameraPreview original image preview directly from the camera.

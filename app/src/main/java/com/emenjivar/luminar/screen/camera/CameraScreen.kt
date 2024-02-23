@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.screen.camera
+package com.emenjivar.luminar.screen.camera
 
 import android.Manifest
 import android.content.Context
@@ -51,15 +51,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.emenjivar.camerafilter.R
-import com.emenjivar.camerafilter.ext.settingsIntent
-import com.emenjivar.camerafilter.ui.components.CustomDialog
-import com.emenjivar.camerafilter.ui.components.CustomDialogAction
-import com.emenjivar.camerafilter.ui.components.rememberCustomDialogController
-import com.emenjivar.camerafilter.ui.widget.FilterBubble
-import com.emenjivar.camerafilter.ui.widget.bubbleBorderSize
-import com.emenjivar.camerafilter.ui.widget.bubbleShape
-import com.emenjivar.camerafilter.ui.widget.bubbleSize
+import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ext.settingsIntent
+import com.emenjivar.luminar.ui.components.CustomDialog
+import com.emenjivar.luminar.ui.components.CustomDialogAction
+import com.emenjivar.luminar.ui.components.rememberCustomDialogController
+import com.emenjivar.luminar.ui.widget.FilterBubble
+import com.emenjivar.luminar.ui.widget.bubbleBorderSize
+import com.emenjivar.luminar.ui.widget.bubbleShape
+import com.emenjivar.luminar.ui.widget.bubbleSize
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState

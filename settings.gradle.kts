@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Real time camera filter"
+rootProject.name = "Morse translator"
 include(":app")
 include(":opencv")

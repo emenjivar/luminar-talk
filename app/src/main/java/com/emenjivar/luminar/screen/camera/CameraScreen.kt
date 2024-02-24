@@ -3,6 +3,7 @@ package com.emenjivar.luminar.screen.camera
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
+import android.widget.ImageView
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -53,7 +54,11 @@ fun CameraScreen() {
     )
 
     // Remembered values
-    val previewView = remember { PreviewView(context) }
+    val previewView = remember {
+        PreviewView(context).apply {
+            this.scaleType = PreviewView.ScaleType.FIT_CENTER
+        }
+    }
     val imageCapture = remember { ImageCapture.Builder().build() }
     val cameraSelector = remember {
         CameraSelector.Builder()
@@ -66,12 +71,15 @@ fun CameraScreen() {
     var imageWithFilter by remember {
         mutableStateOf<Bitmap?>(null)
     }
+
     val imageAnalysis = remember {
         ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build().apply {
                 setAnalyzer(executor, CustomImageAnalyzer(
-                    onDrawImage = { bitmap -> imageWithFilter = bitmap }
+                    onDrawImage = { bitmap ->
+                        imageWithFilter = bitmap
+                    }
                 ))
             }
     }
@@ -84,7 +92,7 @@ fun CameraScreen() {
     LaunchedEffect(Unit) {
         permissionState.launchPermissionRequest()
     }
-    
+
     LaunchedEffect(permissionState.status) {
         if (permissionState.status.isGranted) {
             camera = startCamera(
@@ -104,6 +112,21 @@ fun CameraScreen() {
             AndroidView(
                 modifier = modifier,
                 factory = { previewView }
+            )
+        },
+        filteredCameraPreview = { modifier ->
+            AndroidView(
+                modifier = modifier,
+                factory = { context ->
+                    ImageView(context).apply {
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                    }
+                },
+                update = { view ->
+                    imageWithFilter?.let { bitmap ->
+                        view.setImageBitmap(bitmap)
+                    }
+                }
             )
         }
     )

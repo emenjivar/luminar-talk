@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.emenjivar.camerafilter"
+    namespace = "com.emenjivar.luminar"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.emenjivar.camerafilter"
+        applicationId = "com.emenjivar.luminar"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -51,7 +51,7 @@ android {
 }
 
 dependencies {
-    val cameraxVersion = "1.2.3"
+    val cameraxVersion = "1.3.1"
     val livedataVersion = "1.5.1"
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")

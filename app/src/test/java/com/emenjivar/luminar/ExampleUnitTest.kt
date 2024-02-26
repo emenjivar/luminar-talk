@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter
+package com.emenjivar.luminar
 
 import org.junit.Test
 

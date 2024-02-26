@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ui.theme
+package com.emenjivar.luminar.ui.theme
 
 import android.app.Activity
 import android.os.Build

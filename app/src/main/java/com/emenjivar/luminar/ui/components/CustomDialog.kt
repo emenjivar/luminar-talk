@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ui.components
+package com.emenjivar.luminar.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -10,8 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.emenjivar.camerafilter.R
-import com.emenjivar.camerafilter.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

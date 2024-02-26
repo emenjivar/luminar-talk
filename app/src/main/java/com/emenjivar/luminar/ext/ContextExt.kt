@@ -1,4 +1,4 @@
-package com.emenjivar.camerafilter.ext
+package com.emenjivar.luminar.ext
 
 import android.content.Context
 import android.content.Intent

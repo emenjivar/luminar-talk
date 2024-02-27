@@ -9,8 +9,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.emenjivar.luminar.screen.camera.CameraScreen
 import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import dagger.hilt.android.AndroidEntryPoint
 import org.opencv.android.OpenCVLoader
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

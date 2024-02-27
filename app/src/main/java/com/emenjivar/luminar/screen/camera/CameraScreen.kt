@@ -77,7 +77,7 @@ fun CameraScreen() {
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build().apply {
                 setAnalyzer(executor, CustomImageAnalyzer(
-                    onDrawImage = { bitmap ->
+                    onDrawImage = { _, bitmap ->
                         imageWithFilter = bitmap
                     }
                 ))

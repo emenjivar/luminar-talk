@@ -20,7 +20,10 @@ import org.opencv.imgproc.Imgproc.FONT_HERSHEY_COMPLEX_SMALL
 import org.opencv.imgproc.Imgproc.THRESH_BINARY
 
 class CustomImageAnalyzer(
-    private val onDrawImage: (Bitmap) -> Unit
+    private val onDrawImage: (
+        isFlashTurnOn: Boolean,
+        debug: Bitmap
+    ) -> Unit
 ) : ImageAnalysis.Analyzer {
 
     private val originalMat = Mat()
@@ -83,9 +86,10 @@ class CustomImageAnalyzer(
             FILLED
         )
 
+        val isFlashTurnOn = !keyPoints.empty()
         Imgproc.putText(
             blobMat,
-            "flashlight: ${if (!keyPoints.empty()) "ON" else "OFF"}",
+            "flashlight: ${if (isFlashTurnOn) "ON" else "OFF"}",
             Point(10.0, 10.0),
             FONT_HERSHEY_COMPLEX_SMALL,
             FONT_SCALE,
@@ -103,7 +107,7 @@ class CustomImageAnalyzer(
 
         image.close()
         originalMat.release()
-        onDrawImage(outputBitmap)
+        onDrawImage(isFlashTurnOn, outputBitmap)
     }
 
     companion object {

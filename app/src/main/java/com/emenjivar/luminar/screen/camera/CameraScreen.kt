@@ -11,17 +11,25 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
@@ -31,13 +39,26 @@ import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
+@Composable
+fun CameraScreen(
+    viewModel: CameraViewModel = hiltViewModel()
+) {
+    CameraScreenContent(uiState = viewModel.state)
+}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 @Composable
-fun CameraScreen() {
+fun CameraScreenContent(
+    uiState: CameraUiState
+) {
     // Compose variables
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -52,6 +73,10 @@ fun CameraScreen() {
             }
         }
     )
+
+    // Flows
+    val morseCharacter by uiState.morseCharacter.collectAsState()
+    val lastDuration by uiState.lastDuration.collectAsState()
 
     // Remembered values
     val previewView = remember {
@@ -71,13 +96,33 @@ fun CameraScreen() {
     var imageWithFilter by remember {
         mutableStateOf<Bitmap?>(null)
     }
+    val isFlashTurnOn = remember { mutableStateOf(false) }
+
+    // SideEffects
+    LaunchedEffect(isFlashTurnOn) {
+        snapshotFlow { isFlashTurnOn.value }
+            .distinctUntilChanged()
+            .onEach { isTurnOn ->
+                uiState.addFlashState(isTurnOn)
+            }.launchIn(this)
+    }
+
+    LaunchedEffect(morseCharacter) {
+        if (morseCharacter == MorseCharacter.DIT || morseCharacter == MorseCharacter.DAH) {
+            // Await for some inactivity seconds to end the message
+            // This coroutine is cancelled when a new morse character is emitted
+            delay(CameraViewModel.END_MESSAGE)
+            uiState.finishMessage()
+        }
+    }
 
     val imageAnalysis = remember {
         ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build().apply {
                 setAnalyzer(executor, CustomImageAnalyzer(
-                    onDrawImage = { bitmap ->
+                    onDrawImage = { isTurnOn, bitmap ->
+                        isFlashTurnOn.value = isTurnOn
                         imageWithFilter = bitmap
                     }
                 ))
@@ -127,6 +172,13 @@ fun CameraScreen() {
                         view.setImageBitmap(bitmap)
                     }
                 }
+            )
+            Text(
+                modifier = Modifier
+                    .background(Color.Black)
+                    .align(Alignment.Center),
+                text = "morse character: $morseCharacter\nmilliseconds: $lastDuration",
+                color = Color.White
             )
         }
     )

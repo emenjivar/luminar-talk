@@ -12,7 +12,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
     private val lastDuration = MutableStateFlow(0L)
-    
+
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively
         if (lightFlickers.lastOrNull()?.isTurnOn == isTurnOn) {

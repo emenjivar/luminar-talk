@@ -113,7 +113,8 @@ class CustomImageAnalyzer(
     companion object {
         private const val FONT_SCALE = 0.6
         private const val MIN_THRESHOLD = 158.0
-        private const val MIN_RADIUS = 5f
+        // Play with this value to discard false positive flashlights
+        private const val MIN_RADIUS = 20f
         private const val MAX_RADIUS = 150f
         private const val MIN_AREA = (Math.PI * MIN_RADIUS * MIN_RADIUS).toFloat()
         private const val MAX_AREA = (Math.PI * MAX_RADIUS * MAX_RADIUS).toFloat()

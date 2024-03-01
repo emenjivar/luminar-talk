@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.emenjivar.luminar"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -55,7 +55,8 @@ android {
 dependencies {
     val cameraxVersion = "1.3.1"
     val livedataVersion = "1.5.1"
-    val hiltVersion = "2.48"
+    val hiltVersion = "2.49"
+    val hiltViewModelVersion = "1.2.0"
 
     // Android
     implementation("androidx.core:core-ktx:1.9.0")
@@ -64,6 +65,8 @@ dependencies {
     // DI
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-compiler:$hiltVersion")
+    implementation("androidx.hilt:hilt-navigation-compose:$hiltViewModelVersion")
+
 
     // Compose
     implementation("androidx.activity:activity-compose:1.7.2")

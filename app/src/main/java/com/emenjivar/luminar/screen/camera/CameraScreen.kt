@@ -39,6 +39,7 @@ import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -97,12 +98,22 @@ fun CameraScreenContent(
     }
     val isFlashTurnOn = remember { mutableStateOf(false) }
 
+    // SideEffects
     LaunchedEffect(isFlashTurnOn) {
         snapshotFlow { isFlashTurnOn.value }
             .distinctUntilChanged()
             .onEach { isTurnOn ->
                 uiState.addFlashState(isTurnOn)
             }.launchIn(this)
+    }
+
+    LaunchedEffect(morseCharacter) {
+        if (morseCharacter == MorseCharacter.DIT || morseCharacter == MorseCharacter.DAH) {
+            // Await for some inactivity seconds to end the message
+            // This coroutine is cancelled when a new morse character is emitted
+            delay(CameraViewModel.END_MESSAGE)
+            uiState.finishMessage()
+        }
     }
 
     val imageAnalysis = remember {

@@ -12,6 +12,7 @@ class CameraViewModel @Inject constructor() : ViewModel() {
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
     private val lastDuration = MutableStateFlow(0L)
+    
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively
         if (lightFlickers.lastOrNull()?.isTurnOn == isTurnOn) {
@@ -28,13 +29,13 @@ class CameraViewModel @Inject constructor() : ViewModel() {
             val diffMilliseconds = current.milliseconds - previous.milliseconds
             val isLightEmission = previous.isTurnOn && !current.isTurnOn
 
-
             lastDuration.update { diffMilliseconds }
             if (isLightEmission) {
                 when {
                     diffMilliseconds in (DIT - DIT_ERROR)..(DIT + DIT_ERROR) -> {
                         morseCharacter.update { MorseCharacter.DIT }
                     }
+
                     diffMilliseconds > (DAH - DAH_ERROR) && diffMilliseconds <= (DAH + DAH_ERROR) -> {
                         morseCharacter.update { MorseCharacter.DAH }
                     }
@@ -44,16 +45,16 @@ class CameraViewModel @Inject constructor() : ViewModel() {
                     diffMilliseconds in (SPACE - SPACE_ERROR)..(SPACE + SPACE_ERROR) -> {
                         morseCharacter.update { MorseCharacter.SPACE }
                     }
+
                     diffMilliseconds in (SPACE_LETTER - SPACE_LETTER_ERROR)..(SPACE_LETTER + SPACE_LETTER_ERROR) -> {
                         morseCharacter.update { MorseCharacter.LETTER_SPACE }
                     }
+
                     diffMilliseconds in (SPACE_WORD - SPACE_WORD_ERROR)..(SPACE_WORD + SPACE_WORD_ERROR) -> {
                         morseCharacter.update { MorseCharacter.WORD_SPACE }
                     }
-                    diffMilliseconds > (SPACE_WORD + SPACE_ERROR) -> {
-                        morseCharacter.update { MorseCharacter.END_SENTENCE }
-                        lightFlickers.clear()
-                    }
+
+                    diffMilliseconds >= END_MESSAGE -> finishMessage()
                 }
             }
         }
@@ -61,10 +62,16 @@ class CameraViewModel @Inject constructor() : ViewModel() {
         lightFlickers.add(current)
     }
 
+    private fun finishMessage() {
+        morseCharacter.update { MorseCharacter.END_SENTENCE }
+        lightFlickers.clear()
+    }
+
     val state = CameraUiState(
         morseCharacter = morseCharacter,
         lastDuration = lastDuration,
-        addFlashState = ::addFlashState
+        addFlashState = ::addFlashState,
+        finishMessage = ::finishMessage
     )
 
     companion object {
@@ -84,6 +91,8 @@ class CameraViewModel @Inject constructor() : ViewModel() {
 
         private const val SPACE_WORD = SPACE * 7
         private const val SPACE_WORD_ERROR = SPACE_WORD - (SPACE_LETTER + SPACE_LETTER_ERROR)
+
+        const val END_MESSAGE = SPACE_WORD + SPACE_WORD_ERROR + 1
     }
 }
 

@@ -1,17 +1,27 @@
 package com.emenjivar.luminar.screen.camera
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.emenjivar.luminar.translator.TranslatorRepository
+import com.emenjivar.luminar.translator.dictionary.MorseDictionary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class CameraViewModel @Inject constructor() : ViewModel() {
+class CameraViewModel @Inject constructor(
+    private val translatorRepository: TranslatorRepository
+) : ViewModel() {
 
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
     private val lastDuration = MutableStateFlow(0L)
+
+    init {
+        val test = translatorRepository.find(MorseDictionary.NINE.morseCharacters())
+        Log.wtf("CameraViewModel", "was NINE found? $test")
+    }
 
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively

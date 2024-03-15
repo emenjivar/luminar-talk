@@ -3,7 +3,6 @@ package com.emenjivar.luminar.screen.camera
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import android.widget.ImageView
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -42,7 +41,6 @@ import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -80,7 +78,7 @@ fun CameraScreenContent(
 
     // Flows
     val morseCharacter by uiState.morseCharacter.collectAsState()
-    val word by uiState.word.collectAsState()
+    val messages by uiState.messages.collectAsState()
     val debugMorse by uiState.debugMorse.collectAsState()
 
     // Remembered values
@@ -112,6 +110,7 @@ fun CameraScreenContent(
             }.launchIn(this)
     }
 
+    // TODO: this block could be moved to the viewModel
     LaunchedEffect(morseCharacter) {
         when (morseCharacter) {
             MorseCharacter.DIT, MorseCharacter.DAH -> {
@@ -121,6 +120,11 @@ fun CameraScreenContent(
             MorseCharacter.LETTER_SPACE -> {
                 delay(CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
                 uiState.finishWord()
+            }
+            MorseCharacter.WORD_SPACE -> {
+                delay(CameraViewModel.END_MESSAGE - CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                // Like a ouija board
+                uiState.finishMessage()
             }
             else -> {}
         }
@@ -189,15 +193,16 @@ fun CameraScreenContent(
                 Text(
                     modifier = Modifier
                         .background(Color.Black),
-                    text = word.orEmpty(),
+                    text = debugMorse,
                     color = Color.White
                 )
                 Text(
                     modifier = Modifier
                         .background(Color.Black),
-                    text = debugMorse,
+                    text = messages.toString(),
                     color = Color.White
                 )
+
             }
             Button(
                 modifier = Modifier.align(Alignment.BottomCenter),

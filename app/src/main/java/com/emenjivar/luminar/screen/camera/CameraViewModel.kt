@@ -6,9 +6,10 @@ import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -16,7 +17,6 @@ import javax.inject.Inject
 class CameraViewModel @Inject constructor(
     private val translatorRepository: TranslatorRepository
 ) : ViewModel() {
-
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
     private val lastDuration = MutableStateFlow(0L)
@@ -25,21 +25,20 @@ class CameraViewModel @Inject constructor(
     private val listMorse = mutableListOf<Morse>()
     private val debugMorse = MutableStateFlow("")
 
-    // Indicated the current word
-    private val word = MutableStateFlow<String?>(null)
-
-    private val character = morseCharacter.map {
-        when (it) {
+    // Store the list of messages
+    private val messages = morseCharacter
+        .scan(initial = "") { accumulator, morse ->
+        when (morse) {
             MorseCharacter.DIT -> {
                 listMorse.add(Morse.DOT)
                 debugMorse.update { value -> "$value." }
-                null
+                accumulator
             }
 
             MorseCharacter.DAH -> {
                 listMorse.add(Morse.DASH)
                 debugMorse.update { value -> "$value-" }
-                null
+                accumulator
             }
 
             MorseCharacter.LETTER_SPACE -> {
@@ -47,41 +46,39 @@ class CameraViewModel @Inject constructor(
                 listMorse.clear()
                 lightFlickers.clear()
                 debugMorse.update { "" }
-                word.update { word -> "${word.orEmpty()}$value" }
-                value
+                if (value != null) {
+                    accumulator + value
+                } else {
+                    accumulator
+                }
             }
 
             MorseCharacter.WORD_SPACE -> {
                 listMorse.clear()
                 lightFlickers.clear()
                 debugMorse.update { "" }
-                word.update { word -> "${word.orEmpty()} " }
-                ' '
+                // Add and space to divide indicate a new word starts
+                "$accumulator "
             }
 
             MorseCharacter.END_SENTENCE -> {
                 listMorse.clear()
                 lightFlickers.clear()
-                debugMorse.update { string -> "$string\n" }
-                '\n'
+                debugMorse.update { "" }
+                "$accumulator\n"
             }
-
-            MorseCharacter.NONE -> {
-                listMorse.clear()
-                lightFlickers.clear()
-                null
-            }
-
-            MorseCharacter.SPACE -> null
+            // TODO: add here some condition to clear the message list
+            else -> accumulator
         }
-    }
-
-    init {
-        // TODO: remove this flow once the message flow will be refactor
-        character
-            .filterNotNull()
-            .launchIn(viewModelScope)
-    }
+    }.map { text ->
+        text.split('\n')
+            .filter { it.isNotBlank() }
+            .asReversed()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = emptyList()
+    )
 
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively
@@ -133,9 +130,7 @@ class CameraViewModel @Inject constructor(
     }
 
     private fun finishMessage() {
-//        lightFlickers.clear()
-//        listMorse.clear()
-//        morseCharacter.update { MorseCharacter.END_SENTENCE }
+        morseCharacter.update { MorseCharacter.END_SENTENCE }
     }
 
     private fun finishWord() {
@@ -147,13 +142,14 @@ class CameraViewModel @Inject constructor(
     }
 
     private fun clearText() {
-        word.update { "" }
+        // TODO: send here a signal to clear the text
+//        sentence.update { "" }
     }
 
     val state = CameraUiState(
         morseCharacter = morseCharacter,
         lastDuration = lastDuration,
-        word = word,
+        messages = messages,
         debugMorse = debugMorse,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,

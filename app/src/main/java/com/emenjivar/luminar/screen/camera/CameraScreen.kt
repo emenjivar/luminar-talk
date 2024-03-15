@@ -3,6 +3,7 @@ package com.emenjivar.luminar.screen.camera
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import android.widget.ImageView
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -12,6 +13,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +42,7 @@ import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -76,7 +80,8 @@ fun CameraScreenContent(
 
     // Flows
     val morseCharacter by uiState.morseCharacter.collectAsState()
-    val lastDuration by uiState.lastDuration.collectAsState()
+    val word by uiState.word.collectAsState()
+    val debugMorse by uiState.debugMorse.collectAsState()
 
     // Remembered values
     val previewView = remember {
@@ -108,11 +113,16 @@ fun CameraScreenContent(
     }
 
     LaunchedEffect(morseCharacter) {
-        if (morseCharacter == MorseCharacter.DIT || morseCharacter == MorseCharacter.DAH) {
-            // Await for some inactivity seconds to end the message
-            // This coroutine is cancelled when a new morse character is emitted
-            delay(CameraViewModel.END_MESSAGE)
-            uiState.finishMessage()
+        when (morseCharacter) {
+            MorseCharacter.DIT, MorseCharacter.DAH -> {
+                delay(CameraViewModel.SPACE_LETTER)
+                uiState.finishLetter()
+            }
+            MorseCharacter.LETTER_SPACE -> {
+                delay(CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                uiState.finishWord()
+            }
+            else -> {}
         }
     }
 
@@ -173,13 +183,28 @@ fun CameraScreenContent(
                     }
                 }
             )
-            Text(
-                modifier = Modifier
-                    .background(Color.Black)
-                    .align(Alignment.Center),
-                text = "morse character: $morseCharacter\nmilliseconds: $lastDuration",
-                color = Color.White
-            )
+            Column(
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .background(Color.Black),
+                    text = word.orEmpty(),
+                    color = Color.White
+                )
+                Text(
+                    modifier = Modifier
+                        .background(Color.Black),
+                    text = debugMorse,
+                    color = Color.White
+                )
+            }
+            Button(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                onClick = uiState.clearText
+            ) {
+                Text(text = "Clear")
+            }
         }
     )
 

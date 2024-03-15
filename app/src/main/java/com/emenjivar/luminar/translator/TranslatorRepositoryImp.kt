@@ -33,6 +33,7 @@ class TranslatorRepositoryImp @Inject constructor(
     }
 
     override fun find(list: List<Morse>): Char? {
+        if (list.isEmpty()) return null
         val root = when (list.first()) {
             Morse.DOT -> leftRoot
             Morse.DASH -> rightRoot

@@ -1,11 +1,14 @@
 package com.emenjivar.luminar.screen.camera
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.emenjivar.luminar.translator.TranslatorRepository
-import com.emenjivar.luminar.translator.dictionary.MorseDictionary
+import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -18,9 +21,66 @@ class CameraViewModel @Inject constructor(
     private val lightFlickers = ArrayDeque<LightFlicker>()
     private val lastDuration = MutableStateFlow(0L)
 
+    // Indicates a list of morse that make up a single letter o number
+    private val listMorse = mutableListOf<Morse>()
+    private val debugMorse = MutableStateFlow("")
+
+    // Indicated the current word
+    private val word = MutableStateFlow<String?>(null)
+
+    private val character = morseCharacter.map {
+        when (it) {
+            MorseCharacter.DIT -> {
+                listMorse.add(Morse.DOT)
+                debugMorse.update { value -> "$value." }
+                null
+            }
+
+            MorseCharacter.DAH -> {
+                listMorse.add(Morse.DASH)
+                debugMorse.update { value -> "$value-" }
+                null
+            }
+
+            MorseCharacter.LETTER_SPACE -> {
+                val value = translatorRepository.find(listMorse)
+                listMorse.clear()
+                lightFlickers.clear()
+                debugMorse.update { "" }
+                word.update { word -> "${word.orEmpty()}$value" }
+                value
+            }
+
+            MorseCharacter.WORD_SPACE -> {
+                listMorse.clear()
+                lightFlickers.clear()
+                debugMorse.update { "" }
+                word.update { word -> "${word.orEmpty()} " }
+                ' '
+            }
+
+            MorseCharacter.END_SENTENCE -> {
+                listMorse.clear()
+                lightFlickers.clear()
+                debugMorse.update { string -> "$string\n" }
+                '\n'
+            }
+
+            MorseCharacter.NONE -> {
+                listMorse.clear()
+                lightFlickers.clear()
+                null
+            }
+
+            MorseCharacter.SPACE -> null
+        }
+    }
+
     init {
-        val test = translatorRepository.find(MorseDictionary.NINE.morseCharacters())
-        Log.wtf("CameraViewModel", "was NINE found? $test")
+        // TODO: remove this flow once the message flow will be refactor
+        character
+            .filterNotNull()
+            .launchIn(viewModelScope)
     }
 
     private fun addFlashState(isTurnOn: Boolean) {
@@ -73,15 +133,33 @@ class CameraViewModel @Inject constructor(
     }
 
     private fun finishMessage() {
-        morseCharacter.update { MorseCharacter.END_SENTENCE }
-        lightFlickers.clear()
+//        lightFlickers.clear()
+//        listMorse.clear()
+//        morseCharacter.update { MorseCharacter.END_SENTENCE }
+    }
+
+    private fun finishWord() {
+        morseCharacter.update { MorseCharacter.WORD_SPACE }
+    }
+
+    private fun finishLetter() {
+        morseCharacter.update { MorseCharacter.LETTER_SPACE }
+    }
+
+    private fun clearText() {
+        word.update { "" }
     }
 
     val state = CameraUiState(
         morseCharacter = morseCharacter,
         lastDuration = lastDuration,
+        word = word,
+        debugMorse = debugMorse,
         addFlashState = ::addFlashState,
-        finishMessage = ::finishMessage
+        finishLetter = ::finishLetter,
+        finishWord = ::finishWord,
+        finishMessage = ::finishMessage,
+        clearText = ::clearText
     )
 
     companion object {
@@ -96,10 +174,12 @@ class CameraViewModel @Inject constructor(
         private const val SPACE = DIT
         private const val SPACE_ERROR = SPACE / 2
 
-        private const val SPACE_LETTER = SPACE * 3
+        // Indicates a new letter
+        const val SPACE_LETTER = SPACE * 3
         private const val SPACE_LETTER_ERROR = SPACE_LETTER - (SPACE + SPACE_ERROR)
 
-        private const val SPACE_WORD = SPACE * 7
+        // Indicates a new word
+        const val SPACE_WORD = SPACE * 7
         private const val SPACE_WORD_ERROR = SPACE_WORD - (SPACE_LETTER + SPACE_LETTER_ERROR)
 
         const val END_MESSAGE = SPACE_WORD + SPACE_WORD_ERROR + 1

@@ -27,7 +27,7 @@ import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
 /**
  * @param rawCameraPreview original image preview directly from the camera.
  *  This layout is rendered in the bottom of the layers.
- * @param filterCameraPreview camera image preview but with some filters applied.
+ * @param filteredCameraPreview camera image preview but with some filters applied.
  *  This layout is rendered in front of the cameraContent but behind cameraControls.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -36,7 +36,8 @@ import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
 fun CameraScreenLayout(
     modifier: Modifier = Modifier,
     rawCameraPreview: @Composable BoxScope.(Modifier) -> Unit,
-    filteredCameraPreview: @Composable BoxScope.(Modifier) -> Unit
+    filteredCameraPreview: @Composable BoxScope.(Modifier) -> Unit,
+    messagesPreview: @Composable BoxScope.(Modifier) -> Unit
 ) {
     val enableDebug = remember { mutableStateOf(false) }
     Scaffold(
@@ -47,19 +48,17 @@ fun CameraScreenLayout(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            rawCameraPreview(
-                Modifier.fillMaxSize()
-            )
+            rawCameraPreview(Modifier.fillMaxSize())
             
             if (enableDebug.value) {
                 Box(modifier = modifier.fillMaxSize().background(Color.Black))
             }
 
             if (enableDebug.value) {
-                filteredCameraPreview(
-                    Modifier.fillMaxSize()
-                )
+                filteredCameraPreview(Modifier.fillMaxSize())
             }
+
+            messagesPreview(Modifier.fillMaxSize())
 
             Row(
                 modifier = Modifier
@@ -102,7 +101,8 @@ private fun CameraScreenLayoutTorchOnPreview() {
                     Text(text = "Camera should be displayed here")
                 }
             },
-            filteredCameraPreview = {}
+            filteredCameraPreview = {},
+            messagesPreview = {}
         )
     }
 }
@@ -122,7 +122,8 @@ private fun CameraScreenLayoutTorchOffPreview() {
                     Text(text = "Camera should be displayed here")
                 }
             },
-            filteredCameraPreview = {}
+            filteredCameraPreview = {},
+            messagesPreview = {}
         )
     }
 }

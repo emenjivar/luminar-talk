@@ -28,4 +28,6 @@ style:
     ignoreCompanionObjectPropertyDeclaration: true
   ForbiddenComment:
     allowedPatterns: 'TODO'
+  ReturnCount:
+    max: 3
 

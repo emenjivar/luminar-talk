@@ -8,7 +8,7 @@ For the moment, the project is still under construction.
 - Translate morse to text throught the camera ✅
 - Translate text to light using the torch flashlight (in progress 🚧)
 - Settings to adjust ligh detection (in progress 🚧)
-- Settings to adjust duration of ``dot``
+- Settings to adjust duration of ``dot`` (in progress 🚧)
 
 https://github.com/emenjivar/luminar-talk/assets/19592284/a500ee92-f86d-42df-bae5-8ca66a39aff1
 

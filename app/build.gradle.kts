@@ -53,14 +53,14 @@ android {
 }
 
 dependencies {
-    val cameraxVersion = "1.3.1"
-    val livedataVersion = "1.5.1"
+    val cameraxVersion = "1.3.2"
+    val livedataVersion = "1.6.3"
     val hiltVersion = "2.49"
     val hiltViewModelVersion = "1.2.0"
 
     // Android
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
     // DI
     implementation("com.google.dagger:hilt-android:$hiltVersion")
@@ -68,7 +68,7 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:$hiltViewModelVersion")
 
     // Compose
-    implementation("androidx.activity:activity-compose:1.7.2")
+    implementation("androidx.activity:activity-compose:1.8.2")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")

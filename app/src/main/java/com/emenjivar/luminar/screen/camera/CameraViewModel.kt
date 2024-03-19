@@ -28,57 +28,57 @@ class CameraViewModel @Inject constructor(
     // Store the list of messages
     private val messages = morseCharacter
         .scan(initial = "") { accumulator, morse ->
-        when (morse) {
-            MorseCharacter.DIT -> {
-                listMorse.add(Morse.DOT)
-                debugMorse.update { value -> "$value." }
-                accumulator
-            }
-
-            MorseCharacter.DAH -> {
-                listMorse.add(Morse.DASH)
-                debugMorse.update { value -> "$value-" }
-                accumulator
-            }
-
-            MorseCharacter.LETTER_SPACE -> {
-                val value = translatorRepository.find(listMorse)
-                listMorse.clear()
-                lightFlickers.clear()
-                debugMorse.update { "" }
-                if (value != null) {
-                    accumulator + value
-                } else {
+            when (morse) {
+                MorseCharacter.DIT -> {
+                    listMorse.add(Morse.DOT)
+                    debugMorse.update { value -> "$value." }
                     accumulator
                 }
-            }
 
-            MorseCharacter.WORD_SPACE -> {
-                listMorse.clear()
-                lightFlickers.clear()
-                debugMorse.update { "" }
-                // Add and space to divide indicate a new word starts
-                "$accumulator "
-            }
+                MorseCharacter.DAH -> {
+                    listMorse.add(Morse.DASH)
+                    debugMorse.update { value -> "$value-" }
+                    accumulator
+                }
 
-            MorseCharacter.END_SENTENCE -> {
-                listMorse.clear()
-                lightFlickers.clear()
-                debugMorse.update { "" }
-                "$accumulator\n"
+                MorseCharacter.LETTER_SPACE -> {
+                    val value = translatorRepository.find(listMorse)
+                    listMorse.clear()
+                    lightFlickers.clear()
+                    debugMorse.update { "" }
+                    if (value != null) {
+                        accumulator + value
+                    } else {
+                        accumulator
+                    }
+                }
+
+                MorseCharacter.WORD_SPACE -> {
+                    listMorse.clear()
+                    lightFlickers.clear()
+                    debugMorse.update { "" }
+                    // Add and space to divide indicate a new word starts
+                    "$accumulator "
+                }
+
+                MorseCharacter.END_SENTENCE -> {
+                    listMorse.clear()
+                    lightFlickers.clear()
+                    debugMorse.update { "" }
+                    "$accumulator\n"
+                }
+                // TODO: add here some condition to clear the message list
+                else -> accumulator
             }
-            // TODO: add here some condition to clear the message list
-            else -> accumulator
-        }
-    }.map { text ->
-        text.split('\n')
-            .filter { it.isNotBlank() }
-            .asReversed()
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = emptyList()
-    )
+        }.map { text ->
+            text.split('\n')
+                .filter { it.isNotBlank() }
+                .asReversed()
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = emptyList()
+        )
 
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively

@@ -11,13 +11,6 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,16 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,7 +30,6 @@ import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
-import com.emenjivar.luminar.ui.components.MessageBubble
 import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -53,7 +38,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.time.OffsetTime
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -126,15 +110,18 @@ fun CameraScreenContent(
                 delay(CameraViewModel.SPACE_LETTER)
                 uiState.finishLetter()
             }
+
             MorseCharacter.LETTER_SPACE -> {
                 delay(CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
                 uiState.finishWord()
             }
+
             MorseCharacter.WORD_SPACE -> {
                 delay(CameraViewModel.END_MESSAGE - CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
                 // Like a ouija board
                 uiState.finishMessage()
             }
+
             else -> {}
         }
     }
@@ -176,6 +163,8 @@ fun CameraScreenContent(
     }
 
     CameraScreenLayout(
+        morse = debugMorse,
+        messages = messages,
         rawCameraPreview = { modifier ->
             AndroidView(
                 modifier = modifier,
@@ -196,35 +185,6 @@ fun CameraScreenContent(
                     }
                 }
             )
-        },
-        messagesPreview = {
-            // TODO: this view should be extracted somewhere else
-            if (debugMorse.isNotBlank()) {
-                Text(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .background(color = Color.Black, shape = RoundedCornerShape(15.dp))
-                        .padding(horizontal = 15.dp),
-                    text = debugMorse,
-                    fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(5.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                for (message in messages) {
-                    MessageBubble(
-                        modifier = Modifier.padding(vertical = 5.dp),
-                        message = message
-                    )
-                }
-            }
         }
     )
 

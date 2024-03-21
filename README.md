@@ -2,7 +2,7 @@
 ## Overview
 This project aims to create a real time morse code translator, detecting the light emisions from the camera, translate them to text. Also provides a way to encode text into light using the flashlight.
 
-For the moment, the project is still under construction.
+Download the last release from [here](https://github.com/emenjivar/luminar-talk/releases/latest).
 
 ## Features
 - Translate morse to text throught the camera ✅

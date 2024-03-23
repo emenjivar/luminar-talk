@@ -1,37 +1,47 @@
-# Luminar talk ⚡
-## Overview
-This project aims to create a real time morse code translator, detecting the light emisions from the camera, translate them to text. Also provides a way to encode text into light using the flashlight.
+# Luminar talk ⚡️
+This project is a Morse translator built in android to detect the light emissions from the camera, decode them to Morse and them to text. 
 
-Download the last release from [here](https://github.com/emenjivar/luminar-talk/releases/latest).
+## Introduction
 
-## Features
-- Translate morse to text throught the camera ✅
-- Translate text to light using the torch flashlight (in progress 🚧)
-- Settings to adjust ligh detection (in progress 🚧)
-- Settings to adjust duration of ``dot`` (in progress 🚧)
+Luminar talk follows the [international standards](https://en.wikipedia.org/wiki/Morse_code) for Morse code, defined the following rules:
+
+- Only two available characters: **dots** and **dashes**
+- The unit of time is 1 second
+- The time for dots is 1 unit
+- The time for dashes are 3 units
+- The Morse characters are separated by 1 unit
+- The characters are separated by 3 units
+- The words are separated by 7 units
+
+For reference, you can consult the [list](https://en.wikipedia.org/wiki/Morse_code#/media/File:International_Morse_Code.svg) of characters and their respective equivalence in Morse.
 
 https://github.com/emenjivar/luminar-talk/assets/19592284/a500ee92-f86d-42df-bae5-8ca66a39aff1
 
-## Usage
-This project follows the [standar](https://en.wikipedia.org/wiki/Morse_code) morse rules:
-- there's only two symbols: ``dash`` and ``dot``.
-- ``dot`` is (at the moment) 1 second, ``dash`` is the equivalent to 3 ``dots``.
-- every morse character is separacted by 1 space equivalent to 1 ``dot``
-- Every new letter is separacted by 3 spaces, equivalent to 3 ``dots``
-- Every word is separated by 7 spaces, equivalent to ``7`` dots.
+## Tech stack
 
-Open the app and point the camera to the source of light.
-If the light is not detected very well, you could enable ``debug`` mode and verify the ligh is surrounded by a green circle.
+This is a native android app build with the following technologies:
 
-[Here](https://en.wikipedia.org/wiki/Morse_code#/media/File:International_Morse_Code.svg) is the standar table of characters used for this project.
-
-## Developments
-### Tools
-- Jetpack compose 1.6.2
+- Jetpack compose
 - Material3
 - CameraX 1.2.3
 - OpenCV 4.8.0
 
-### Pre-requisits
-- Android studio
-- Openjdk 17.0.9
+## Installation
+
+To install Luminar talk:
+
+1. Download the latest version in the [releases page](https://github.com/emenjivar/luminar-talk/releases/latest)
+2. Enable installation for unknown sources in your device
+3. Install the APK 
+
+## Roadmap
+
+1. Develop a feature to translate text into light using the device's torch flashlight.
+2. Implement automatic detection of the duration of the dits and dashes in Morse code.
+3. Release the application on Google Play Store.
+
+## Feedback ans issues
+
+Did you find some issues or have suggestions for improvement, we welcome your input.
+
+Feel free to create an [issue](https://github.com/emenjivar/luminar-talk/issues/new) detailing your problem or proposal.

@@ -15,7 +15,9 @@ Luminar talk follows the [international standards](https://en.wikipedia.org/wiki
 
 For reference, you can consult the [list](https://en.wikipedia.org/wiki/Morse_code#/media/File:International_Morse_Code.svg) of characters and their respective equivalence in Morse.
 
+
 https://github.com/emenjivar/luminar-talk/assets/19592284/a500ee92-f86d-42df-bae5-8ca66a39aff1
+
 
 ## Tech stack
 

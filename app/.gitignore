@@ -1,1 +1,5 @@
 /build
+
+# Android studio generated files
+*.apk
+*.json

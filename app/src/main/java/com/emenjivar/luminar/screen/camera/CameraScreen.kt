@@ -73,11 +73,13 @@ fun CameraScreenContent(
     val morseCharacter by uiState.morseCharacter.collectAsState()
     val messages by uiState.messages.collectAsState()
     val debugMorse by uiState.debugMorse.collectAsState()
+    val circularityRange by uiState.circularityRange.collectAsState()
+    val blobRadiusRange by uiState.blobRadiusRange.collectAsState()
 
     // Remembered values
     val previewView = remember {
         PreviewView(context).apply {
-            this.scaleType = PreviewView.ScaleType.FIT_CENTER
+            this.scaleType = PreviewView.ScaleType.FILL_CENTER
         }
     }
     val imageCapture = remember { ImageCapture.Builder().build() }
@@ -165,6 +167,10 @@ fun CameraScreenContent(
     CameraScreenLayout(
         morse = debugMorse,
         messages = messages,
+        circularityRange = { circularityRange },
+        blobRadiusRange = { blobRadiusRange },
+        onSetCircularity = uiState.onSetCircularity,
+        onSetBlobRadius = uiState.onSetBlobRadius,
         rawCameraPreview = { modifier ->
             AndroidView(
                 modifier = modifier,

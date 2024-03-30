@@ -1,7 +1,9 @@
 package com.emenjivar.luminar.screen.camera
 
 import android.annotation.SuppressLint
+import android.util.Range
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,9 +19,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -27,12 +32,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ui.components.CustomSlider
 import com.emenjivar.luminar.ui.components.MessageBubble
 import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
 
@@ -52,10 +62,15 @@ fun CameraScreenLayout(
     modifier: Modifier = Modifier,
     morse: String,
     messages: List<String>,
+    circularityRange: () -> Range<Float>,
+    blobRadiusRange: () -> Range<Float>,
+    onSetCircularity: (Range<Float>) -> Unit,
+    onSetBlobRadius: (Range<Float>) -> Unit,
     rawCameraPreview: @Composable BoxScope.(Modifier) -> Unit,
     filteredCameraPreview: @Composable BoxScope.(Modifier) -> Unit
 ) {
     val enableDebug = remember { mutableStateOf(false) }
+    val displaySettings = remember { mutableStateOf(false) }
     val verticalScroll = rememberScrollState()
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
 
@@ -66,7 +81,38 @@ fun CameraScreenLayout(
 
     Scaffold(
         modifier = modifier,
-        contentColor = Color.Transparent
+        contentColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = {},
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color.Transparent
+                ),
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .padding(8.dp)
+                            .clickable { displaySettings.value = !displaySettings.value },
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .clip(CircleShape),
+                            painter = painterResource(
+                                id = if (displaySettings.value) {
+                                    R.drawable.ic_close
+                                } else {
+                                    R.drawable.ic_settings
+                                }
+                            ),
+                            contentDescription = "Settings",
+                            tint = Color.White
+                        )
+                    }
+                }
+            )
+        }
     ) { _ ->
         Box(
             modifier = Modifier
@@ -103,46 +149,76 @@ fun CameraScreenLayout(
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(heightMessages)
-                    .padding(paddingMessages)
-                    .align(Alignment.BottomCenter)
-                    .verticalScroll(verticalScroll),
-                horizontalAlignment = Alignment.Start
-            ) {
-                for (message in messages) {
-                    MessageBubble(
-                        modifier = Modifier.padding(paddingMessages),
-                        message = message
+            if (displaySettings.value) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Black
+                                )
+                            )
+                        )
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CustomSlider(
+                        fieldName = "Circularity",
+                        value = circularityRange,
+                        valueRange = Range(0f, CIRCULARITY_MAX),
+                        onValueChange = onSetCircularity
+                    )
+
+                    CustomSlider(
+                        fieldName = "Circle radius",
+                        value = blobRadiusRange,
+                        valueRange = Range(0f, RADIUS_MAX),
+                        onValueChange = onSetBlobRadius
                     )
                 }
-            }
-
-            Row(
-                modifier = Modifier
-                    .padding(debugSwitchPadding)
-                    .align(Alignment.BottomEnd)
-                    .background(color = Color.Black, shape = CircleShape)
-                    .padding(
-                        horizontal = horizontalPaddingDebugSwitch,
-                        vertical = verticalPaddingDebugSwitch
-                    ),
-                horizontalArrangement = Arrangement.spacedBy(debugSwitchPadding),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Debug",
-                    color = Color.White,
-                    fontSize = fontSizeDebug
-                )
-                Switch(
-                    checked = enableDebug.value,
-                    onCheckedChange = {
-                        enableDebug.value = it
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(heightMessages)
+                        .padding(paddingMessages)
+                        .align(Alignment.BottomCenter)
+                        .verticalScroll(verticalScroll),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    for (message in messages) {
+                        MessageBubble(
+                            modifier = Modifier.padding(paddingMessages),
+                            message = message
+                        )
                     }
-                )
+                }
+                Row(
+                    modifier = Modifier
+                        .padding(debugSwitchPadding)
+                        .align(Alignment.BottomEnd)
+                        .background(color = Color.Black, shape = CircleShape)
+                        .padding(
+                            horizontal = horizontalPaddingDebugSwitch,
+                            vertical = verticalPaddingDebugSwitch
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(debugSwitchPadding),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Debug",
+                        color = Color.White,
+                        fontSize = fontSizeDebug
+                    )
+                    Switch(
+                        checked = enableDebug.value,
+                        onCheckedChange = {
+                            enableDebug.value = it
+                        }
+                    )
+                }
             }
         }
     }
@@ -162,6 +238,9 @@ private val fontSizeDebug = 11.sp
 
 private val verticalJump = 20.dp
 
+private const val CIRCULARITY_MAX = 1f
+private const val  RADIUS_MAX = 200f
+
 @Composable
 @Preview
 private fun CameraScreenLayoutTorchOnPreview() {
@@ -169,6 +248,10 @@ private fun CameraScreenLayoutTorchOnPreview() {
         CameraScreenLayout(
             morse = "",
             messages = emptyList(),
+            circularityRange = { Range(0f, 1f) },
+            blobRadiusRange = { Range(0f, 1f) },
+            onSetCircularity = {},
+            onSetBlobRadius = {},
             rawCameraPreview = {
                 Box(
                     modifier = Modifier
@@ -191,6 +274,10 @@ private fun CameraScreenLayoutTorchOffPreview() {
         CameraScreenLayout(
             morse = "",
             messages = emptyList(),
+            circularityRange = { Range(0f, 1f) },
+            blobRadiusRange = { Range(0f, 1f) },
+            onSetCircularity = {},
+            onSetBlobRadius = {},
             rawCameraPreview = {
                 Box(
                     modifier = Modifier

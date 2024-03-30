@@ -1,7 +1,9 @@
 package com.emenjivar.luminar.screen.camera
 
+import android.util.Range
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.emenjivar.luminar.data.SettingPreferences
 import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,11 +13,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val translatorRepository: TranslatorRepository
+    private val translatorRepository: TranslatorRepository,
+    private val settings: SettingPreferences
 ) : ViewModel() {
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
@@ -79,6 +83,32 @@ class CameraViewModel @Inject constructor(
             started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
+
+    private val circularityRange = settings.getCircularity()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = Range(0f, 1f)
+        )
+
+    private val blobRadiusRange = settings.getBlobRadius()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = Range(0f, 1f)
+        )
+
+    private fun onSetCircularity(range: Range<Float>) {
+        viewModelScope.launch {
+            settings.setCircularity(range)
+        }
+    }
+
+    private fun onSetBlobRadius(range: Range<Float>) {
+        viewModelScope.launch {
+            settings.setBlobRadius(range)
+        }
+    }
 
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively
@@ -151,11 +181,15 @@ class CameraViewModel @Inject constructor(
         lastDuration = lastDuration,
         messages = messages,
         debugMorse = debugMorse,
+        circularityRange = circularityRange,
+        blobRadiusRange = blobRadiusRange,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,
         finishMessage = ::finishMessage,
-        clearText = ::clearText
+        clearText = ::clearText,
+        onSetCircularity = ::onSetCircularity,
+        onSetBlobRadius = ::onSetBlobRadius
     )
 
     companion object {

@@ -1,4 +1,4 @@
-package com.emenjivar.luminar.ui.components
+package com.emenjivar.luminar.ui.components.message
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

@@ -9,9 +9,11 @@
     <string name="button_enable_filter">Enable filter</string>
     <string name="button_disable_filter">Disable filter</string>
 
-    <!-- filters -->
-    <string name="filter_type_normal">Normal</string>
-    <string name="filter_type_gray">Gray</string>
-    <string name="filter_type_sepia">Sepia</string>
-    <string name="filer_type_vintage">Vintage</string>
+    <string name="settings_circularity">Circularity</string>
+    <string name="settings_circularity_help">Determines the range of circularity of detected light blobs, 1 represents a perfect circle and 0f represents an amorphous shape.</string>
+    <string name="settings_radius">Circle radius</string>
+    <string name="settings_radius_help">Determines the range of radio for detected light blobs.</string>
+    <string name="settings_bpm">Beats per minute</string>
+    <string name="settings_bpm_help">Determines the beats per second at which the dots are emitted/received.</string>
+    <string name="settings_field_content_description">Help for %s field</string>
 </resources>

@@ -57,6 +57,8 @@ dependencies {
     val livedataVersion = "1.6.3"
     val hiltVersion = "2.49"
     val hiltViewModelVersion = "1.2.0"
+    val composeUI = "1.6.7"
+    val material3 = "1.2.1"
 
     // Android
     implementation("androidx.core:core-ktx:1.12.0")
@@ -68,15 +70,15 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:$hiltViewModelVersion")
 
     // Compose
-    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.activity:activity-compose:1.9.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.ui:ui:$composeUI")
+    implementation("androidx.compose.ui:ui-graphics:$composeUI")
+    implementation("androidx.compose.ui:ui-tooling-preview:$composeUI")
     implementation("androidx.compose.runtime:runtime-livedata:$livedataVersion")
 
     // Material
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:$material3")
 
     // CameraX
     implementation("androidx.camera:camera-core:${cameraxVersion}")

@@ -96,7 +96,7 @@ interface SettingPreferences {
     fun getLightBPM(): Flow<Int>
 
     /**
-     * Set the light flashing rate in bits per minute (BPM).
+     * Set the light flashing rate in beats per minute (BPM).
      */
     suspend fun setLightBPM(value: Int)
 }

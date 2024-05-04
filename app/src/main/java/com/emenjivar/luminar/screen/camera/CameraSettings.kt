@@ -4,7 +4,10 @@ import android.util.Range
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -19,8 +22,10 @@ fun CameraSettings(
     modifier: Modifier = Modifier,
     circularityRange: () -> Range<Float>,
     blobRadiusRange: () -> Range<Float>,
+    lightBPM: () -> Int,
     onSetCircularity: (Range<Float>) -> Unit,
     onSetBlobRadius: (Range<Float>) -> Unit,
+    onSetLightBPM: (Int) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -32,7 +37,10 @@ fun CameraSettings(
                     )
                 )
             )
-            .padding(16.dp),
+            .padding(
+                horizontal = 32.dp,
+                vertical = 16.dp
+            ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CustomSlider(
@@ -48,6 +56,20 @@ fun CameraSettings(
             valueRange = Range(0f, RADIUS_MAX),
             onValueChange = onSetBlobRadius
         )
+
+        Text(
+            text = "Bits per minute (${lightBPM()})",
+            color = Color.White
+        )
+        Row {
+            Slider(
+                value = lightBPM().toFloat(),
+                valueRange = 40f..100f,
+                onValueChange = { value ->
+                    onSetLightBPM(value.toInt())
+                }
+            )
+        }
     }
 }
 
@@ -65,8 +87,10 @@ private fun CameraSettingsPreview() {
         CameraSettings(
             circularityRange = { Range(0f, UPPER_RANGE_CIRCULARITY) },
             blobRadiusRange = { Range(0f, UPPER_RANGE_BLOB) },
+            lightBPM = { 0 },
             onSetCircularity = {},
-            onSetBlobRadius = {}
+            onSetBlobRadius = {},
+            onSetLightBPM = {}
         )
     }
 }

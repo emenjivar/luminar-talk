@@ -84,6 +84,7 @@ fun CameraScreenContent(
     val debugMorse by uiState.debugMorse.collectAsState()
     val circularityRange by uiState.circularityRange.collectAsState()
     val blobRadiusRange by uiState.blobRadiusRange.collectAsState()
+    val lightBPM by uiState.lightBPM.collectAsState()
 
     // Remembered values
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
@@ -219,8 +220,10 @@ fun CameraScreenContent(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     circularityRange = { circularityRange },
                     blobRadiusRange = { blobRadiusRange },
+                    lightBPM = { lightBPM },
                     onSetCircularity = uiState.onSetCircularity,
-                    onSetBlobRadius = uiState.onSetBlobRadius
+                    onSetBlobRadius = uiState.onSetBlobRadius,
+                    onSetLightBPM = uiState.onSetLightBPM
                 )
             } else {
                 MessageHistory(

@@ -10,6 +10,7 @@ data class CameraUiState(
     val debugMorse: StateFlow<String>,
     val circularityRange: StateFlow<Range<Float>>,
     val blobRadiusRange: StateFlow<Range<Float>>,
+    val lightBPM: StateFlow<Int>,
     val addFlashState : (isTurnOn: Boolean) -> Unit,
     val finishLetter: () -> Unit,
     val finishWord: () -> Unit,
@@ -17,4 +18,5 @@ data class CameraUiState(
     val clearText: () -> Unit,
     val onSetCircularity: (Range<Float>) -> Unit,
     val onSetBlobRadius: (Range<Float>) -> Unit,
+    val onSetLightBPM: (Int) -> Unit
 )

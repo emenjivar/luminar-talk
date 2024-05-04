@@ -98,6 +98,13 @@ class CameraViewModel @Inject constructor(
             initialValue = Range(0f, 1f)
         )
 
+    private val lightBPM = settings.getLightBPM()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = 60
+        )
+
     private fun onSetCircularity(range: Range<Float>) {
         viewModelScope.launch {
             settings.setCircularity(range)
@@ -107,6 +114,12 @@ class CameraViewModel @Inject constructor(
     private fun onSetBlobRadius(range: Range<Float>) {
         viewModelScope.launch {
             settings.setBlobRadius(range)
+        }
+    }
+
+    private fun onSetLightBPM(value: Int) {
+        viewModelScope.launch {
+            settings.setLightBPM(value)
         }
     }
 
@@ -183,13 +196,15 @@ class CameraViewModel @Inject constructor(
         debugMorse = debugMorse,
         circularityRange = circularityRange,
         blobRadiusRange = blobRadiusRange,
+        lightBPM = lightBPM,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,
         finishMessage = ::finishMessage,
         clearText = ::clearText,
         onSetCircularity = ::onSetCircularity,
-        onSetBlobRadius = ::onSetBlobRadius
+        onSetBlobRadius = ::onSetBlobRadius,
+        onSetLightBPM = ::onSetLightBPM
     )
 
     companion object {

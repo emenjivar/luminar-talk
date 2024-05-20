@@ -82,6 +82,7 @@ fun CameraScreenContent(
     val morseCharacter by uiState.morseCharacter.collectAsState()
     val messages by uiState.messages.collectAsState()
     val debugMorse by uiState.debugMorse.collectAsState()
+    val timingData by uiState.timingData.collectAsState()
     val circularityRange by uiState.circularityRange.collectAsState()
     val blobRadiusRange by uiState.blobRadiusRange.collectAsState()
     val lightBPM by uiState.lightBPM.collectAsState()
@@ -124,21 +125,20 @@ fun CameraScreenContent(
         verticalScroll.animateScrollBy(verticalJumpPx * messages.size)
     }
 
-    // TODO: this block could be moved to the viewModel
     LaunchedEffect(morseCharacter) {
         when (morseCharacter) {
             MorseCharacter.DIT, MorseCharacter.DAH -> {
-                delay(CameraViewModel.SPACE_LETTER)
+                delay(timingData.spaceLetter)
                 uiState.finishLetter()
             }
 
             MorseCharacter.LETTER_SPACE -> {
-                delay(CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                delay(timingData.spaceWord - timingData.spaceLetter)
                 uiState.finishWord()
             }
 
             MorseCharacter.WORD_SPACE -> {
-                delay(CameraViewModel.END_MESSAGE - CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                delay(timingData.endMessage - timingData.spaceWord - timingData.spaceLetter)
                 // Like a ouija board
                 uiState.finishMessage()
             }
@@ -152,14 +152,12 @@ fun CameraScreenContent(
         topBar = {
             TopAppBar(
                 title = {},
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color.Transparent
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f))
+                            .background(Color.Black.copy(alpha = 0.2f))
                             .padding(8.dp)
                             .clickable {
                                 shouldDisplaySettings.value = !shouldDisplaySettings.value
@@ -223,7 +221,8 @@ fun CameraScreenContent(
                     lightBPM = { lightBPM },
                     onSetCircularity = uiState.onSetCircularity,
                     onSetBlobRadius = uiState.onSetBlobRadius,
-                    onSetLightBPM = uiState.onSetLightBPM
+                    onSetLightBPM = uiState.onSetLightBPM,
+                    onResetClick = uiState.onReset
                 )
             } else {
                 MessageHistory(

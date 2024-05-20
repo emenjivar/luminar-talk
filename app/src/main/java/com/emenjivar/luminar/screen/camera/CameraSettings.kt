@@ -1,12 +1,16 @@
 package com.emenjivar.luminar.screen.camera
 
 import android.util.Range
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PlainTooltip
@@ -22,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
@@ -38,7 +43,8 @@ fun CameraSettings(
     lightBPM: () -> Int,
     onSetCircularity: (Range<Float>) -> Unit,
     onSetBlobRadius: (Range<Float>) -> Unit,
-    onSetLightBPM: (Int) -> Unit
+    onSetLightBPM: (Int) -> Unit,
+    onResetClick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val tooltipState = rememberTooltipState(isPersistent = true)
@@ -113,6 +119,22 @@ fun CameraSettings(
                 }
             )
         }
+
+        Button(
+            onClick = onResetClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent,
+                contentColor = Color.White
+            ),
+            border = BorderStroke(width = 1.dp, color = Color.White)
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Reset configuration",
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
+        }
     }
 }
 
@@ -133,7 +155,8 @@ private fun CameraSettingsPreview() {
             lightBPM = { 0 },
             onSetCircularity = {},
             onSetBlobRadius = {},
-            onSetLightBPM = {}
+            onSetLightBPM = {},
+            onResetClick = {}
         )
     }
 }

@@ -54,13 +54,18 @@ class SettingPreferencesImp @Inject constructor(
     }
 
     override fun getLightBPM() = context.dataStore.data.map { settings ->
-        settings[lightBPM] ?: 60
+        settings[lightBPM] ?: DEFAULT_BPM
     }.distinctUntilChanged()
 
     override suspend fun setLightBPM(value: Int) {
         context.dataStore.edit { settings ->
             settings[lightBPM] = value
         }
+    }
+
+
+    companion object {
+        private const val DEFAULT_BPM = 60
     }
 }
 

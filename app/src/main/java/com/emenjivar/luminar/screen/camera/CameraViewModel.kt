@@ -95,7 +95,7 @@ class CameraViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
-            initialValue = Range(0f, 1f)
+            initialValue = Range(0f, 200f)
         )
 
     private val lightBPM = settings.getLightBPM()
@@ -135,7 +135,7 @@ class CameraViewModel @Inject constructor(
 
     private fun onReset() {
         viewModelScope.launch {
-            settings.setBlobRadius(Range(0f, 1f))
+            settings.setBlobRadius(Range(0f, 200f))
             settings.setCircularity(Range(0f, 1f))
             settings.setLightBPM(DEFAULT_BPM)
         }

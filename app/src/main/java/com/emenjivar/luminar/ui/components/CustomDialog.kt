@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.emenjivar.luminar.R
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -94,7 +94,7 @@ private fun CustomDialogPreview() {
         show()
     }
 
-    RealTimeCameraFilterTheme {
+    AppTheme {
         CustomDialog(
             controller = dialogController,
             title = stringResource(R.string.camera_dialog_access_title),

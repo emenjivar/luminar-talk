@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.ui.shapes.MessageShape
 import com.emenjivar.luminar.ui.shapes.TipOrientation
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 
 @Composable
 fun MessageBubble(
@@ -74,7 +74,7 @@ private val VERTICAL_PADDING = 5.dp
 @Preview
 @Composable
 private fun MessageBubbleText() {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         Column(
             modifier = Modifier
                 .background(Color.White)

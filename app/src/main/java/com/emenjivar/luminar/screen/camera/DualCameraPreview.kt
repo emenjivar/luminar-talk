@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.zIndex
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 
 /**
  * This composable render the camera preview along with an option debug overlay,
@@ -65,7 +65,7 @@ private class BooleanParameterProvider : PreviewParameterProvider<Boolean> {
 private fun CameraPreviewLayoutPreview(
     @PreviewParameter(BooleanParameterProvider::class) isDebugEnabled: Boolean
 ) {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         DualCameraPreview(
             isDebugEnabled = isDebugEnabled,
             rawPreview = {

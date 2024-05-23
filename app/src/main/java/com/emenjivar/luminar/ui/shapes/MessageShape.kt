@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 
 class MessageShape(
     private val tipOrientation: TipOrientation
@@ -76,7 +76,7 @@ enum class TipOrientation {
 @Preview
 @Composable
 private fun MessageShapePreview() {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         Column {
             Box(
                 modifier = Modifier

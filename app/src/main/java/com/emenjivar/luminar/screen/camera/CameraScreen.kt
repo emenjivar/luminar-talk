@@ -36,8 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
+import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
 import com.emenjivar.luminar.ui.components.MorseText
@@ -49,19 +51,27 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.serialization.Serializable
 
 @Composable
 fun CameraScreen(
-    viewModel: CameraViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: CameraViewModel = hiltViewModel(),
 ) {
-    CameraScreenContent(uiState = viewModel.state)
+    CameraScreenContent(
+        uiState = viewModel.state,
+        onNavigateToSettings = {
+            navController.navigate(SettingsRoute)
+        }
+    )
 }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 @Composable
 fun CameraScreenContent(
-    uiState: CameraUiState
+    uiState: CameraUiState,
+    onNavigateToSettings: () -> Unit
 ) {
     // Compose variables
     val context = LocalContext.current
@@ -160,7 +170,7 @@ fun CameraScreenContent(
                             .background(Color.Black.copy(alpha = 0.2f))
                             .padding(8.dp)
                             .clickable {
-                                shouldDisplaySettings.value = !shouldDisplaySettings.value
+                                onNavigateToSettings()
                             },
                     ) {
                         Icon(
@@ -267,5 +277,8 @@ fun CameraScreenContent(
         )
     )
 }
+
+@Serializable
+object HomeRoute
 
 private val verticalJump = 20.dp

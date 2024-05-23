@@ -4,6 +4,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.4"
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24"
 }
 
 android {
@@ -43,7 +44,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -55,14 +56,16 @@ android {
 dependencies {
     val cameraxVersion = "1.3.2"
     val livedataVersion = "1.6.3"
-    val hiltVersion = "2.49"
+    val hiltVersion = "2.51.1"
     val hiltViewModelVersion = "1.2.0"
     val composeUI = "1.6.7"
     val material3 = "1.2.1"
+    val navigation = "2.8.0-alpha08"
 
     // Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // DI
     implementation("com.google.dagger:hilt-android:$hiltVersion")
@@ -76,6 +79,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics:$composeUI")
     implementation("androidx.compose.ui:ui-tooling-preview:$composeUI")
     implementation("androidx.compose.runtime:runtime-livedata:$livedataVersion")
+    implementation("androidx.navigation:navigation-compose:$navigation")
 
     // Material
     implementation("androidx.compose.material3:material3:$material3")

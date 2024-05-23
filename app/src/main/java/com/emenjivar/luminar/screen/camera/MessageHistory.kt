@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.ui.components.message.MessageBubble
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 
 /**
  * Renders the list of messages decoded from morse.
@@ -49,7 +49,7 @@ private val heightMessages = 300.dp
 @Preview
 @Composable
 private fun MessageHistoryPreview() {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         MessageHistory(
             messages = listOf(
                 "alpha",

@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 
 /**
  * Used for displaying a floating text in a rounded background component.
@@ -42,7 +42,7 @@ private val fontSizeMorseText = 25.sp
 @Preview
 @Composable
 private fun MorseTextPreview() {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         MorseText(text = "-.--")
     }
 }

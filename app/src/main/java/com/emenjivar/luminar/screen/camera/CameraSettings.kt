@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ui.components.CustomSlider
-import com.emenjivar.luminar.ui.theme.RealTimeCameraFilterTheme
+import com.emenjivar.luminar.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +148,7 @@ private const val UPPER_RANGE_BLOB = 100f
 @Preview
 @Composable
 private fun CameraSettingsPreview() {
-    RealTimeCameraFilterTheme {
+    AppTheme {
         CameraSettings(
             circularityRange = { Range(0f, UPPER_RANGE_CIRCULARITY) },
             blobRadiusRange = { Range(0f, UPPER_RANGE_BLOB) },

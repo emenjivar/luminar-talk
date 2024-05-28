@@ -10,7 +10,7 @@ import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.screen.settings.SettingsScreen
 
 @Composable
-fun MainNavHost(navController: NavHostController) {
+fun MainNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
             CameraScreen(navController = navController)

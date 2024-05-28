@@ -7,11 +7,12 @@ import com.emenjivar.luminar.data.SettingPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    settings: SettingPreferences
+    private val settings: SettingPreferences
 ) : ViewModel() {
 
     private val circularityRange = settings.getCircularity()
@@ -35,10 +36,31 @@ class SettingsViewModel @Inject constructor(
             initialValue = 60
         )
 
+    private fun onSetCircularity(range: Range<Float>) {
+        viewModelScope.launch {
+            settings.setCircularity(range)
+        }
+    }
+
+    private fun onSetBlobRadius(range: Range<Float>) {
+        viewModelScope.launch {
+            settings.setBlobRadius(range)
+        }
+    }
+
+    private fun onSetLightBPM(value: Int) {
+        viewModelScope.launch {
+            settings.setLightBPM(value)
+        }
+    }
+
     val uiState = SettingsUiState(
         circularityRange = circularityRange,
         blobRadiusRange = blobRadiusRange,
         lightBPM = lightBPM,
+        onSetCircularity = ::onSetCircularity,
+        onSetBlobRadius = ::onSetBlobRadius,
+        onSetLightBPM = ::onSetLightBPM,
         onReset = {},
     )
 }

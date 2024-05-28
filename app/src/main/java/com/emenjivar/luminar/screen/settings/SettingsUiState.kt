@@ -7,5 +7,8 @@ data class SettingsUiState(
     val circularityRange: StateFlow<Range<Float>>,
     val blobRadiusRange: StateFlow<Range<Float>>,
     val lightBPM: StateFlow<Int>,
+    val onSetCircularity: (Range<Float>) -> Unit,
+    val onSetBlobRadius: (Range<Float>) -> Unit,
+    val onSetLightBPM: (Int) -> Unit,
     val onReset: () -> Unit
 )

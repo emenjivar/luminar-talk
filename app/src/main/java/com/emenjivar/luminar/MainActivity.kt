@@ -16,9 +16,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 val navController = rememberNavController()
-                MainNavHost(navController = navController)
+                MainNavGraph(navController = navController)
             }
         }
     }
 }
-

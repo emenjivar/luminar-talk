@@ -60,7 +60,7 @@ dependencies {
     val hiltViewModelVersion = "1.2.0"
     val composeUI = "1.6.7"
     val material3 = "1.2.1"
-    val navigation = "2.8.0-alpha08"
+    val navigation = "2.8.0-beta01"
 
     // Android
     implementation("androidx.core:core-ktx:1.13.1")
@@ -82,6 +82,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$navigation")
 
     // Material
+    implementation("androidx.compose.material:material:1.6.7")
     implementation("androidx.compose.material3:material3:$material3")
 
     // CameraX

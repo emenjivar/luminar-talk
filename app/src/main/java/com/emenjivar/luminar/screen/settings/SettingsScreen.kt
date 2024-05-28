@@ -3,6 +3,8 @@ package com.emenjivar.luminar.screen.settings
 import android.util.Range
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,12 +25,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.util.toRange
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.twoDecimals
+import com.emenjivar.luminar.ui.components.buttons.ActionButton
 import com.emenjivar.luminar.ui.theme.AppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -79,7 +83,9 @@ fun SettingsContent(
             )
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
             SettingItem(
                 title = stringResource(id = R.string.settings_circularity),
                 value = "${circularityRange.lower.twoDecimals()} " +
@@ -146,6 +152,14 @@ fun SettingsContent(
                         bottomSheetState.expand()
                     }
                 }
+            )
+            
+            Spacer(modifier = Modifier.weight(1f))
+            ActionButton(
+                modifier = Modifier.padding(20.dp),
+                text = "Reset configuration",
+                isPrimaryAction = true,
+                onClick = uiState.onReset
             )
         }
     }

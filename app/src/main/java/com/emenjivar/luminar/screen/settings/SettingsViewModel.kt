@@ -54,6 +54,14 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun onReset() {
+        viewModelScope.launch {
+            settings.setBlobRadius(Range(0f, 200f))
+            settings.setCircularity(Range(0f, 1f))
+            settings.setLightBPM(60)
+        }
+    }
+
     val uiState = SettingsUiState(
         circularityRange = circularityRange,
         blobRadiusRange = blobRadiusRange,
@@ -61,6 +69,6 @@ class SettingsViewModel @Inject constructor(
         onSetCircularity = ::onSetCircularity,
         onSetBlobRadius = ::onSetBlobRadius,
         onSetLightBPM = ::onSetLightBPM,
-        onReset = {},
+        onReset = ::onReset,
     )
 }

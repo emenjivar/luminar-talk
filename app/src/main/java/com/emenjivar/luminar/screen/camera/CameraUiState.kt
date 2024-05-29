@@ -17,8 +17,5 @@ data class CameraUiState(
     val finishWord: () -> Unit,
     val finishMessage: () -> Unit,
     val clearText: () -> Unit,
-    val onSetCircularity: (Range<Float>) -> Unit,
-    val onSetBlobRadius: (Range<Float>) -> Unit,
-    val onSetLightBPM: (Int) -> Unit,
     val onReset: () -> Unit
 )

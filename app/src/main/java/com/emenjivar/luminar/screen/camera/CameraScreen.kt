@@ -93,14 +93,10 @@ fun CameraScreenContent(
     val messages by uiState.messages.collectAsState()
     val debugMorse by uiState.debugMorse.collectAsState()
     val timingData by uiState.timingData.collectAsState()
-    val circularityRange by uiState.circularityRange.collectAsState()
-    val blobRadiusRange by uiState.blobRadiusRange.collectAsState()
-    val lightBPM by uiState.lightBPM.collectAsState()
 
     // Remembered values
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
     val isDebugEnabled = remember { mutableStateOf(false) }
-    val shouldDisplaySettings = remember { mutableStateOf(false) }
 
     var imageWithFilter by remember {
         mutableStateOf<Bitmap?>(null)
@@ -176,13 +172,7 @@ fun CameraScreenContent(
                         Icon(
                             modifier = Modifier
                                 .clip(CircleShape),
-                            painter = painterResource(
-                                id = if (shouldDisplaySettings.value) {
-                                    R.drawable.ic_close
-                                } else {
-                                    R.drawable.ic_settings
-                                }
-                            ),
+                            painter = painterResource(id = R.drawable.ic_settings),
                             contentDescription = "Settings",
                             tint = Color.White
                         )
@@ -223,34 +213,21 @@ fun CameraScreenContent(
                 }
             )
 
-            if (shouldDisplaySettings.value) {
-                CameraSettings(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    circularityRange = { circularityRange },
-                    blobRadiusRange = { blobRadiusRange },
-                    lightBPM = { lightBPM },
-                    onSetCircularity = uiState.onSetCircularity,
-                    onSetBlobRadius = uiState.onSetBlobRadius,
-                    onSetLightBPM = uiState.onSetLightBPM,
-                    onResetClick = uiState.onReset
-                )
-            } else {
-                MessageHistory(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter),
-                    messages = messages,
-                    verticalScroll = verticalScroll
-                )
-                SwitchButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd),
-                    text = "Debug",
-                    isEnabled = isDebugEnabled.value,
-                    onEnable = { isEnabled ->
-                        isDebugEnabled.value = isEnabled
-                    }
-                )
-            }
+            MessageHistory(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter),
+                messages = messages,
+                verticalScroll = verticalScroll
+            )
+            SwitchButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd),
+                text = "Debug",
+                isEnabled = isDebugEnabled.value,
+                onEnable = { isEnabled ->
+                    isDebugEnabled.value = isEnabled
+                }
+            )
 
             if (debugMorse.isNotBlank()) {
                 MorseText(

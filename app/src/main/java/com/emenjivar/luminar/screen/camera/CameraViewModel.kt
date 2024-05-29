@@ -115,24 +115,6 @@ class CameraViewModel @Inject constructor(
         initialValue = TimingData(DEFAULT_DIT_TIME)
     )
 
-    private fun onSetCircularity(range: Range<Float>) {
-        viewModelScope.launch {
-            settings.setCircularity(range)
-        }
-    }
-
-    private fun onSetBlobRadius(range: Range<Float>) {
-        viewModelScope.launch {
-            settings.setBlobRadius(range)
-        }
-    }
-
-    private fun onSetLightBPM(value: Int) {
-        viewModelScope.launch {
-            settings.setLightBPM(value)
-        }
-    }
-
     private fun onReset() {
         viewModelScope.launch {
             settings.setBlobRadius(Range(0f, 200f))
@@ -222,9 +204,6 @@ class CameraViewModel @Inject constructor(
         finishWord = ::finishWord,
         finishMessage = ::finishMessage,
         clearText = ::clearText,
-        onSetCircularity = ::onSetCircularity,
-        onSetBlobRadius = ::onSetBlobRadius,
-        onSetLightBPM = ::onSetLightBPM,
         onReset = ::onReset
     )
 

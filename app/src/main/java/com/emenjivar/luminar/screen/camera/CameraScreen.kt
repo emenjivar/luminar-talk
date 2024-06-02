@@ -2,6 +2,7 @@ package com.emenjivar.luminar.screen.camera
 
 import android.Manifest
 import android.graphics.Bitmap
+import android.util.Log
 import android.widget.ImageView
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
@@ -36,9 +37,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
+import com.emenjivar.luminar.screen.camera.analyzer.CustomImageAnalyzer
 import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
@@ -52,6 +55,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.Serializable
+import org.opencv.features2d.SimpleBlobDetector_Params
 
 @Composable
 fun CameraScreen(
@@ -89,10 +93,12 @@ fun CameraScreenContent(
     )
 
     // Flows
-    val morseCharacter by uiState.morseCharacter.collectAsState()
-    val messages by uiState.messages.collectAsState()
-    val debugMorse by uiState.debugMorse.collectAsState()
-    val timingData by uiState.timingData.collectAsState()
+    val morseCharacter by uiState.morseCharacter.collectAsStateWithLifecycle()
+    val messages by uiState.messages.collectAsStateWithLifecycle()
+    val debugMorse by uiState.debugMorse.collectAsStateWithLifecycle()
+    val timingData by uiState.timingData.collectAsStateWithLifecycle()
+    val circularityRange by uiState.circularityRange.collectAsStateWithLifecycle()
+    val blobAreaRange by uiState.blobAreaRange.collectAsStateWithLifecycle()
 
     // Remembered values
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
@@ -108,8 +114,21 @@ fun CameraScreenContent(
             this.scaleType = PreviewView.ScaleType.FILL_CENTER
         }
     }
-    val imageAnalysis = remember {
+
+    // TODO: this remember will restart the camera at least 2 times.
+    val imageAnalysis = remember(circularityRange, blobAreaRange) {
+        Log.wtf("CameraScreen", "circularity: $circularityRange, range: $blobAreaRange")
         CustomImageAnalyzer(
+            blobParameters = SimpleBlobDetector_Params().apply {
+                _filterByCircularity = true
+                _minCircularity = circularityRange.lower
+                _maxCircularity = circularityRange.upper
+
+                // Play with these values to discard false positive flashlights
+                _filterByArea = true
+                _minArea = blobAreaRange.lower
+                _maxArea = blobAreaRange.upper
+            },
             onDrawImage = { isTurnOn, bitmap ->
                 isFlashTurnOn.value = isTurnOn
                 imageWithFilter = bitmap

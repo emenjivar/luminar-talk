@@ -10,7 +10,7 @@ data class CameraUiState(
     val debugMorse: StateFlow<String>,
     val timingData: StateFlow<TimingData>,
     val circularityRange: StateFlow<Range<Float>>,
-    val blobRadiusRange: StateFlow<Range<Float>>,
+    val blobAreaRange: StateFlow<Range<Float>>,
     val lightBPM: StateFlow<Int>,
     val addFlashState : (isTurnOn: Boolean) -> Unit,
     val finishLetter: () -> Unit,

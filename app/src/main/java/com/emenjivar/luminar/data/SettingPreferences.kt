@@ -42,7 +42,7 @@ class SettingPreferencesImp @Inject constructor(
     override fun getBlobRadius() = context.dataStore.data
         .map { settings ->
             val min = settings[minRadius] ?: 0f
-            val max = settings[maxRadius] ?: 0f
+            val max = settings[maxRadius] ?: 200f
             Range(min, max)
         }.distinctUntilChanged()
 

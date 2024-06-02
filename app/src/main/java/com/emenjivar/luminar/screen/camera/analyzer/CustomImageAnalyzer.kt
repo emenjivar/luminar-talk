@@ -1,4 +1,4 @@
-package com.emenjivar.luminar.screen.camera
+package com.emenjivar.luminar.screen.camera.analyzer
 
 import android.graphics.Bitmap
 import androidx.camera.core.ImageAnalysis
@@ -20,6 +20,7 @@ import org.opencv.imgproc.Imgproc.FONT_HERSHEY_COMPLEX_SMALL
 import org.opencv.imgproc.Imgproc.THRESH_BINARY
 
 class CustomImageAnalyzer(
+    private val blobParameters: SimpleBlobDetector_Params,
     private val onDrawImage: (
         isFlashTurnOn: Boolean,
         debug: Bitmap
@@ -67,7 +68,7 @@ class CustomImageAnalyzer(
         // Blows are extracted easy from negative images
         val inverseMath = Mat()
         val keyPoints = MatOfKeyPoint()
-        val blobDetector = SimpleBlobDetector.create(BLOB_PARAMS)
+        val blobDetector = SimpleBlobDetector.create(blobParameters)
         Core.bitwise_not(thresholdMat, inverseMath)
         blobDetector.detect(inverseMath, keyPoints)
 
@@ -113,21 +114,5 @@ class CustomImageAnalyzer(
     companion object {
         private const val FONT_SCALE = 0.6
         private const val MIN_THRESHOLD = 158.0
-        // Play with this value to discard false positive flashlights
-        private const val MIN_RADIUS = 20f
-        private const val MAX_RADIUS = 150f
-        private const val MIN_AREA = (Math.PI * MIN_RADIUS * MIN_RADIUS).toFloat()
-        private const val MAX_AREA = (Math.PI * MAX_RADIUS * MAX_RADIUS).toFloat()
-
-        private val BLOB_PARAMS = SimpleBlobDetector_Params().apply {
-            this._filterByArea = true
-            this._minArea = MIN_AREA
-            this._maxArea = MAX_AREA
-
-            // Circularity 1f is a perfect circle
-            this._filterByCircularity = true
-            this._minCircularity = 0.5f
-            this._maxCircularity = 1f
-        }
     }
 }

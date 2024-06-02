@@ -84,18 +84,29 @@ class CameraViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    private val minAllowedCircularity = 0.01f
     private val circularityRange = settings.getCircularity()
+        .map { range ->
+            val min = range.lower.coerceAtLeast(minAllowedCircularity)
+            Range(min, range.upper)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
-            initialValue = Range(0f, 1f)
+            initialValue = Range(minAllowedCircularity, 1f)
         )
 
-    private val blobRadiusRange = settings.getBlobRadius()
+    private val minAllowedArea = 0.01f
+    private val blobAreaRange = settings.getBlobRadius()
+        .map { range ->
+            val minArea = (Math.PI * range.lower * range.lower).toFloat().coerceAtLeast(minAllowedArea)
+            val maxArea = (Math.PI * range.upper * range.upper).toFloat()
+            Range(minArea, maxArea)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
-            initialValue = Range(0f, 200f)
+            initialValue = Range(minAllowedArea, 200f)
         )
 
     private val lightBPM = settings.getLightBPM()
@@ -142,7 +153,7 @@ class CameraViewModel @Inject constructor(
 
             lastDuration.update { diffMilliseconds }
             if (isLightEmission) {
-                when(diffMilliseconds) {
+                when (diffMilliseconds) {
                     in timing.getDitRange() -> {
                         morseCharacter.update { MorseCharacter.DIT }
                     }
@@ -197,7 +208,7 @@ class CameraViewModel @Inject constructor(
         debugMorse = debugMorse,
         timingData = timingData,
         circularityRange = circularityRange,
-        blobRadiusRange = blobRadiusRange,
+        blobAreaRange = blobAreaRange,
         lightBPM = lightBPM,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,

@@ -23,6 +23,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:windowSoftInputMode="adjustNothing"
             android:theme="@style/Theme.RealTimeCameraFilter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

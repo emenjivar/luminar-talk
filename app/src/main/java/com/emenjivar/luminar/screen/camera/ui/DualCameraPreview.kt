@@ -1,4 +1,4 @@
-package com.emenjivar.luminar.screen.camera
+package com.emenjivar.luminar.screen.camera.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

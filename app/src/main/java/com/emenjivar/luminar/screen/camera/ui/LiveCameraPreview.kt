@@ -1,4 +1,4 @@
-package com.emenjivar.luminar.screen.camera
+package com.emenjivar.luminar.screen.camera.ui
 
 import android.content.Context
 import androidx.camera.core.Camera

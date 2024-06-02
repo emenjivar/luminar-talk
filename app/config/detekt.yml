@@ -26,6 +26,8 @@ style:
   MagicNumber:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    active: false
   ForbiddenComment:
     allowedPatterns: 'TODO'
   ReturnCount:

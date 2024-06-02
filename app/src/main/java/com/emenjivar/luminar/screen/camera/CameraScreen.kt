@@ -1,16 +1,23 @@
 package com.emenjivar.luminar.screen.camera
 
 import android.Manifest
-import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import android.widget.ImageView
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,46 +26,62 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
+import com.emenjivar.luminar.screen.camera.analyzer.CustomImageAnalyzer
+import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
+import com.emenjivar.luminar.ui.components.MorseText
+import com.emenjivar.luminar.ui.components.SwitchButton
 import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import kotlinx.serialization.Serializable
+import org.opencv.features2d.SimpleBlobDetector_Params
 
 @Composable
 fun CameraScreen(
-    viewModel: CameraViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: CameraViewModel = hiltViewModel(),
 ) {
-    CameraScreenContent(uiState = viewModel.state)
+    CameraScreenContent(
+        uiState = viewModel.state,
+        onNavigateToSettings = {
+            navController.navigate(SettingsRoute)
+        }
+    )
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 @Composable
 fun CameraScreenContent(
-    uiState: CameraUiState
+    uiState: CameraUiState,
+    onNavigateToSettings: () -> Unit
 ) {
     // Compose variables
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     // Controllers
+    val verticalScroll = rememberScrollState()
     val dialogController = rememberCustomDialogController()
     val permissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA,
@@ -70,29 +93,48 @@ fun CameraScreenContent(
     )
 
     // Flows
-    val morseCharacter by uiState.morseCharacter.collectAsState()
-    val messages by uiState.messages.collectAsState()
-    val debugMorse by uiState.debugMorse.collectAsState()
+    val morseCharacter by uiState.morseCharacter.collectAsStateWithLifecycle()
+    val messages by uiState.messages.collectAsStateWithLifecycle()
+    val debugMorse by uiState.debugMorse.collectAsStateWithLifecycle()
+    val timingData by uiState.timingData.collectAsStateWithLifecycle()
+    val circularityRange by uiState.circularityRange.collectAsStateWithLifecycle()
+    val blobAreaRange by uiState.blobAreaRange.collectAsStateWithLifecycle()
 
     // Remembered values
-    val previewView = remember {
-        PreviewView(context).apply {
-            this.scaleType = PreviewView.ScaleType.FIT_CENTER
-        }
-    }
-    val imageCapture = remember { ImageCapture.Builder().build() }
-    val cameraSelector = remember {
-        CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-            .build()
-    }
-    val executor = remember {
-        ContextCompat.getMainExecutor(context)
-    }
+    val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
+    val isDebugEnabled = remember { mutableStateOf(false) }
+
     var imageWithFilter by remember {
         mutableStateOf<Bitmap?>(null)
     }
     val isFlashTurnOn = remember { mutableStateOf(false) }
+
+    val previewView = remember {
+        PreviewView(context).apply {
+            this.scaleType = PreviewView.ScaleType.FILL_CENTER
+        }
+    }
+
+    // TODO: this remember will restart the camera at least 2 times.
+    val imageAnalysis = remember(circularityRange, blobAreaRange) {
+        Log.wtf("CameraScreen", "circularity: $circularityRange, range: $blobAreaRange")
+        CustomImageAnalyzer(
+            blobParameters = SimpleBlobDetector_Params().apply {
+                _filterByCircularity = true
+                _minCircularity = circularityRange.lower
+                _maxCircularity = circularityRange.upper
+
+                // Play with these values to discard false positive flashlights
+                _filterByArea = true
+                _minArea = blobAreaRange.lower
+                _maxArea = blobAreaRange.upper
+            },
+            onDrawImage = { isTurnOn, bitmap ->
+                isFlashTurnOn.value = isTurnOn
+                imageWithFilter = bitmap
+            }
+        )
+    }
 
     // SideEffects
     LaunchedEffect(isFlashTurnOn) {
@@ -103,21 +145,25 @@ fun CameraScreenContent(
             }.launchIn(this)
     }
 
-    // TODO: this block could be moved to the viewModel
+    LaunchedEffect(messages) {
+        // Scroll to the bottom after receiving a new message
+        verticalScroll.animateScrollBy(verticalJumpPx * messages.size)
+    }
+
     LaunchedEffect(morseCharacter) {
         when (morseCharacter) {
             MorseCharacter.DIT, MorseCharacter.DAH -> {
-                delay(CameraViewModel.SPACE_LETTER)
+                delay(timingData.spaceLetter)
                 uiState.finishLetter()
             }
 
             MorseCharacter.LETTER_SPACE -> {
-                delay(CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                delay(timingData.spaceWord - timingData.spaceLetter)
                 uiState.finishWord()
             }
 
             MorseCharacter.WORD_SPACE -> {
-                delay(CameraViewModel.END_MESSAGE - CameraViewModel.SPACE_WORD - CameraViewModel.SPACE_LETTER)
+                delay(timingData.endMessage - timingData.spaceWord - timingData.spaceLetter)
                 // Like a ouija board
                 uiState.finishMessage()
             }
@@ -126,67 +172,90 @@ fun CameraScreenContent(
         }
     }
 
-    val imageAnalysis = remember {
-        ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build().apply {
-                setAnalyzer(executor, CustomImageAnalyzer(
-                    onDrawImage = { isTurnOn, bitmap ->
-                        isFlashTurnOn.value = isTurnOn
-                        imageWithFilter = bitmap
-                    }
-                ))
-            }
-    }
-    var camera by remember { mutableStateOf<Camera?>(null) }
-
-    // States
-    val preview = Preview.Builder().build()
-
-    // Launched
-    LaunchedEffect(Unit) {
-        permissionState.launchPermissionRequest()
-    }
-
-    LaunchedEffect(permissionState.status) {
-        if (permissionState.status.isGranted) {
-            camera = startCamera(
-                context = context,
-                lifecycleOwner = lifecycleOwner,
-                cameraSelector = cameraSelector,
-                preview = preview,
-                previewView = previewView,
-                imageCapture = imageCapture,
-                imageAnalysis = imageAnalysis
-            )
-        }
-    }
-
-    CameraScreenLayout(
-        morse = debugMorse,
-        messages = messages,
-        rawCameraPreview = { modifier ->
-            AndroidView(
-                modifier = modifier,
-                factory = { previewView }
-            )
-        },
-        filteredCameraPreview = { modifier ->
-            AndroidView(
-                modifier = modifier,
-                factory = { context ->
-                    ImageView(context).apply {
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }
-                },
-                update = { view ->
-                    imageWithFilter?.let { bitmap ->
-                        view.setImageBitmap(bitmap)
+    Scaffold(
+        contentColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = {},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                actions = {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.2f))
+                            .padding(8.dp)
+                            .clickable {
+                                onNavigateToSettings()
+                            },
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .clip(CircleShape),
+                            painter = painterResource(id = R.drawable.ic_settings),
+                            contentDescription = "Settings",
+                            tint = Color.White
+                        )
                     }
                 }
             )
         }
-    )
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues.calculateBottomPadding())
+        ) {
+            DualCameraPreview(
+                isDebugEnabled = isDebugEnabled.value,
+                rawPreview = { modifier ->
+                    LiveCameraPreview(
+                        modifier = modifier,
+                        previewView = previewView,
+                        analyzer = imageAnalysis,
+                        permissionState = permissionState
+                    )
+                },
+                debugPreview = { modifier ->
+                    AndroidView(
+                        modifier = modifier,
+                        factory = { context ->
+                            ImageView(context).apply {
+                                scaleType = ImageView.ScaleType.FIT_CENTER
+                            }
+                        },
+                        update = { view ->
+                            imageWithFilter?.let { bitmap ->
+                                view.setImageBitmap(bitmap)
+                            }
+                        }
+                    )
+                }
+            )
+
+            MessageHistory(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter),
+                messages = messages,
+                verticalScroll = verticalScroll
+            )
+            SwitchButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd),
+                text = "Debug",
+                isEnabled = isDebugEnabled.value,
+                onEnable = { isEnabled ->
+                    isDebugEnabled.value = isEnabled
+                }
+            )
+
+            if (debugMorse.isNotBlank()) {
+                MorseText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = debugMorse
+                )
+            }
+        }
+    }
 
     CustomDialog(
         controller = dialogController,
@@ -205,33 +274,7 @@ fun CameraScreenContent(
     )
 }
 
-private suspend fun startCamera(
-    context: Context,
-    lifecycleOwner: LifecycleOwner,
-    cameraSelector: CameraSelector,
-    preview: Preview,
-    previewView: PreviewView,
-    imageCapture: ImageCapture,
-    imageAnalysis: ImageAnalysis
-): Camera {
-    val cameraProvider = context.getCameraProvider()
-    cameraProvider.unbindAll()
-    val camera = cameraProvider.bindToLifecycle(
-        lifecycleOwner,
-        cameraSelector,
-        preview,
-        imageAnalysis,
-        imageCapture
-    )
-    preview.setSurfaceProvider(previewView.surfaceProvider)
-    return camera
-}
+@Serializable
+object HomeRoute
 
-private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
-    suspendCoroutine { continuation ->
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        val provider = cameraProviderFuture.get()
-        cameraProviderFuture.addListener({
-            continuation.resume(provider)
-        }, ContextCompat.getMainExecutor(this))
-    }
+private val verticalJump = 20.dp

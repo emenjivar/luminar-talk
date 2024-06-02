@@ -1,7 +1,9 @@
 package com.emenjivar.luminar.screen.camera
 
+import android.util.Range
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.emenjivar.luminar.data.SettingPreferences
 import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,11 +13,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val translatorRepository: TranslatorRepository
+    private val translatorRepository: TranslatorRepository,
+    private val settings: SettingPreferences
 ) : ViewModel() {
     private val morseCharacter = MutableStateFlow(MorseCharacter.NONE)
     private val lightFlickers = ArrayDeque<LightFlicker>()
@@ -80,11 +84,62 @@ class CameraViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    private val minAllowedCircularity = 0.01f
+    private val circularityRange = settings.getCircularity()
+        .map { range ->
+            val min = range.lower.coerceAtLeast(minAllowedCircularity)
+            Range(min, range.upper)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = Range(minAllowedCircularity, 1f)
+        )
+
+    private val minAllowedArea = 0.01f
+    private val blobAreaRange = settings.getBlobRadius()
+        .map { range ->
+            val minArea = (Math.PI * range.lower * range.lower).toFloat().coerceAtLeast(minAllowedArea)
+            val maxArea = (Math.PI * range.upper * range.upper).toFloat()
+            Range(minArea, maxArea)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = Range(minAllowedArea, 200f)
+        )
+
+    private val lightBPM = settings.getLightBPM()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = 60
+        )
+
+    private val timingData = lightBPM.map { bpm ->
+        bpm / SECOND_PER_MINUTE * MILLISECOND_PER_SECOND
+    }.map { dit ->
+        TimingData(dit)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = TimingData(DEFAULT_DIT_TIME)
+    )
+
+    private fun onReset() {
+        viewModelScope.launch {
+            settings.setBlobRadius(Range(0f, 200f))
+            settings.setCircularity(Range(0f, 1f))
+            settings.setLightBPM(DEFAULT_BPM)
+        }
+    }
+
     private fun addFlashState(isTurnOn: Boolean) {
         // Ensure the same elements in not saved twice consecutively
         if (lightFlickers.lastOrNull()?.isTurnOn == isTurnOn) {
             return
         }
+        val timing = this.timingData.value
 
         val previous = lightFlickers.lastOrNull()
         val current = LightFlicker(
@@ -98,30 +153,30 @@ class CameraViewModel @Inject constructor(
 
             lastDuration.update { diffMilliseconds }
             if (isLightEmission) {
-                when {
-                    diffMilliseconds in (DIT - DIT_ERROR)..(DIT + DIT_ERROR) -> {
+                when (diffMilliseconds) {
+                    in timing.getDitRange() -> {
                         morseCharacter.update { MorseCharacter.DIT }
                     }
 
-                    diffMilliseconds > (DAH - DAH_ERROR) && diffMilliseconds <= (DAH + DAH_ERROR) -> {
+                    in timing.getDashRange() -> {
                         morseCharacter.update { MorseCharacter.DAH }
                     }
                 }
             } else {
                 when {
-                    diffMilliseconds in (SPACE - SPACE_ERROR)..(SPACE + SPACE_ERROR) -> {
+                    diffMilliseconds in timing.getDitRange() -> {
                         morseCharacter.update { MorseCharacter.SPACE }
                     }
 
-                    diffMilliseconds in (SPACE_LETTER - SPACE_LETTER_ERROR)..(SPACE_LETTER + SPACE_LETTER_ERROR) -> {
+                    diffMilliseconds in timing.getSpaceLetterRange() -> {
                         morseCharacter.update { MorseCharacter.LETTER_SPACE }
                     }
 
-                    diffMilliseconds in (SPACE_WORD - SPACE_WORD_ERROR)..(SPACE_WORD + SPACE_WORD_ERROR) -> {
+                    diffMilliseconds in timing.getSpaceWordRange() -> {
                         morseCharacter.update { MorseCharacter.WORD_SPACE }
                     }
 
-                    diffMilliseconds >= END_MESSAGE -> finishMessage()
+                    diffMilliseconds >= timing.endMessage -> finishMessage()
                 }
             }
         }
@@ -151,34 +206,23 @@ class CameraViewModel @Inject constructor(
         lastDuration = lastDuration,
         messages = messages,
         debugMorse = debugMorse,
+        timingData = timingData,
+        circularityRange = circularityRange,
+        blobAreaRange = blobAreaRange,
+        lightBPM = lightBPM,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,
         finishMessage = ::finishMessage,
-        clearText = ::clearText
+        clearText = ::clearText,
+        onReset = ::onReset
     )
 
     companion object {
-        // TODO: DIT is the UNIT that determines the duration of the other characters
-        //  for now is good, but this should be a dynamic value.
-        private const val DIT = 1000L
-        private const val DIT_ERROR = DIT / 2
-
-        private const val DAH = DIT * 3
-        private const val DAH_ERROR = DIT + DIT_ERROR
-
-        private const val SPACE = DIT
-        private const val SPACE_ERROR = SPACE / 2
-
-        // Indicates a new letter
-        const val SPACE_LETTER = SPACE * 3
-        private const val SPACE_LETTER_ERROR = SPACE_LETTER - (SPACE + SPACE_ERROR)
-
-        // Indicates a new word
-        const val SPACE_WORD = SPACE * 7
-        private const val SPACE_WORD_ERROR = SPACE_WORD - (SPACE_LETTER + SPACE_LETTER_ERROR)
-
-        const val END_MESSAGE = SPACE_WORD + SPACE_WORD_ERROR + 1
+        private const val SECOND_PER_MINUTE = 60
+        private const val DEFAULT_DIT_TIME = 1000L
+        private const val MILLISECOND_PER_SECOND = 1000L
+        private const val DEFAULT_BPM = 60
     }
 }
 

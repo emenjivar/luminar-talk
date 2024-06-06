@@ -1,10 +1,9 @@
-package com.emenjivar.luminar.screen.camera
+package com.emenjivar.luminar.screen.camera.ui
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -18,6 +17,7 @@ import com.emenjivar.luminar.ui.theme.AppTheme
 
 /**
  * Renders the list of messages decoded from morse.
+ * @param messages List of messages displayed on the chat history.
  */
 @Composable
 @Stable
@@ -29,22 +29,17 @@ fun MessageHistory(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(heightMessages)
-            .padding(paddingMessages)
             .verticalScroll(verticalScroll),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(paddingMessages)
     ) {
         for (message in messages) {
-            MessageBubble(
-                modifier = Modifier.padding(paddingMessages),
-                message = message
-            )
+            MessageBubble(message = message)
         }
     }
 }
 
-private val paddingMessages = 3.dp
-private val heightMessages = 300.dp
+private val paddingMessages = 4.dp
 
 @Preview
 @Composable

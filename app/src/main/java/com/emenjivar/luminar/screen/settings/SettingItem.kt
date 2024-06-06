@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 
 @Composable
 fun SettingItem(
@@ -36,12 +38,18 @@ fun SettingItem(
         ) {
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold
+                style = AppTypography.h2
             )
-            Text(text = value)
+            Text(
+                text = value,
+                style = AppTypography.captionCaption,
+                fontWeight = FontWeight.Normal,
+                fontSize = 11.sp
+            )
         }
         Text(
-            text = description
+            text = description,
+            style = AppTypography.captionCaption
         )
 
         HorizontalDivider(
@@ -54,7 +62,7 @@ fun SettingItem(
 
 private val paddingItem = 20.dp
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun SettingItemPreview() {
     AppTheme {

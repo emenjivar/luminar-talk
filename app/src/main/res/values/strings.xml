@@ -9,11 +9,19 @@
     <string name="button_enable_filter">Enable filter</string>
     <string name="button_disable_filter">Disable filter</string>
 
+    <string name="settings_title">Settings</string>
     <string name="settings_circularity">Circularity</string>
     <string name="settings_circularity_help">Determines the range of circularity of detected light blobs, 1 represents a perfect circle and 0f represents an amorphous shape.</string>
     <string name="settings_radius">Circle radius</string>
     <string name="settings_radius_help">Determines the range of radio for detected light blobs.</string>
     <string name="settings_bpm">Beats per minute</string>
     <string name="settings_bpm_help">Determines the beats per second at which the dots are emitted/received.</string>
+    <string name="settings_reset">Reset configuration</string>
     <string name="settings_field_content_description">Help for %s field</string>
+
+    <string name="placeholder_message">Message</string>
+
+    <string name="content_description_settings">Open settings</string>
+    <string name="content_description_emit">Emit message using the flashlight of the device.</string>
+    <string name="content_description_back">Navigate back</string>
 </resources>

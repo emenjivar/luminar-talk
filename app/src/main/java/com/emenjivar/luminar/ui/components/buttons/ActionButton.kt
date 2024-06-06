@@ -1,18 +1,20 @@
 package com.emenjivar.luminar.ui.components.buttons
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 
 /**
  * Represent a standard button with a text label.
@@ -28,43 +30,52 @@ fun ActionButton(
     isPrimaryAction: Boolean,
     onClick: () -> Unit
 ) {
+    val containerColor = when {
+        isPrimaryAction -> Color.Black
+        !isSystemInDarkTheme() -> Color.White
+        else -> Color.Black
+    }
+    val borderColor = when {
+        isPrimaryAction && isSystemInDarkTheme() -> Color.White.copy(alpha = BORDER_ALPHA)
+        else -> Color.Transparent
+    }
+    val textColor = when {
+        isPrimaryAction && !isSystemInDarkTheme() -> Color.White
+        isSystemInDarkTheme() -> Color.White
+        else -> Color.Black
+    }
+
+        if (isSystemInDarkTheme()) {
+        Color.White
+    } else {
+        Color.Black
+    }
+
     Button(
         modifier = modifier
             .height(buttonHeight)
             .fillMaxWidth(),
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isPrimaryAction) {
-                Color.Black
-            } else {
-                Color.White
-            },
-            contentColor = if (isPrimaryAction) {
-                Color.White
-            } else {
-                Color.Black
-            }
+            containerColor = containerColor,
+            contentColor = textColor
         ),
         border = BorderStroke(
             width = 1.dp,
-            color = if (isPrimaryAction) {
-                Color.Black
-            } else {
-                Color.Black.copy(alpha = BORDER_ALPHA)
-            }
+            color = borderColor
         )
     ) {
         Text(
             text = text,
-            fontWeight = FontWeight.Bold
+            style = AppTypography.captionButton
         )
     }
 }
 
 private val buttonHeight = 52.dp
-private const val BORDER_ALPHA = 0.5f
+private const val BORDER_ALPHA = 0.2f
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ActionButtonPrimaryPreview() {
     AppTheme {
@@ -76,14 +87,16 @@ private fun ActionButtonPrimaryPreview() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ActionButtonSecondaryPreview() {
     AppTheme {
-        ActionButton(
-            text = "Cancel",
-            isPrimaryAction = false,
-            onClick = {}
-        )
+        Surface {
+            ActionButton(
+                text = "Cancel",
+                isPrimaryAction = false,
+                onClick = {}
+            )
+        }
     }
 }

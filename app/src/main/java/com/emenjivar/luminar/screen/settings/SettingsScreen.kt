@@ -4,8 +4,8 @@ import android.util.Range
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +34,7 @@ import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.twoDecimals
 import com.emenjivar.luminar.ui.components.buttons.ActionButton
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -64,9 +65,15 @@ fun SettingsContent(
     val settingsItem = remember { mutableStateOf(SettingsItem.default()) }
 
     Scaffold(
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
-                title = { Text(text = "Settings") },
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.settings_title),
+                        style = AppTypography.h1
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Black,
                     navigationIconContentColor = Color.White,
@@ -76,7 +83,7 @@ fun SettingsContent(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back),
-                            contentDescription = "Navigate back"
+                            contentDescription = stringResource(id = R.string.content_description_back)
                         )
                     }
                 }
@@ -89,7 +96,7 @@ fun SettingsContent(
             SettingItem(
                 title = stringResource(id = R.string.settings_circularity),
                 value = "${circularityRange.lower.twoDecimals()} " +
-                    "to ${circularityRange.upper.twoDecimals()}",
+                        "to ${circularityRange.upper.twoDecimals()}",
                 description = stringResource(id = R.string.settings_circularity_help),
                 onClick = {
                     coroutineScope.launch {
@@ -113,7 +120,7 @@ fun SettingsContent(
             SettingItem(
                 title = stringResource(id = R.string.settings_radius),
                 value = "${blobRadiusRange.lower.twoDecimals()}px " +
-                    "to ${blobRadiusRange.upper.twoDecimals()}px",
+                        "to ${blobRadiusRange.upper.twoDecimals()}px",
                 description = stringResource(id = R.string.settings_radius_help),
                 onClick = {
                     coroutineScope.launch {
@@ -153,11 +160,11 @@ fun SettingsContent(
                     }
                 }
             )
-            
+
             Spacer(modifier = Modifier.weight(1f))
             ActionButton(
                 modifier = Modifier.padding(20.dp),
-                text = "Reset configuration",
+                text = stringResource(id = R.string.settings_reset),
                 isPrimaryAction = true,
                 onClick = uiState.onReset
             )

@@ -2,25 +2,30 @@ package com.emenjivar.luminar.screen.camera
 
 import android.Manifest
 import android.graphics.Bitmap
-import android.util.Log
+import android.util.Range
 import android.widget.ImageView
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,15 +48,20 @@ import androidx.navigation.NavController
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.settingsIntent
 import com.emenjivar.luminar.screen.camera.analyzer.CustomImageAnalyzer
+import com.emenjivar.luminar.screen.camera.ui.DualCameraPreview
+import com.emenjivar.luminar.screen.camera.ui.LiveCameraPreview
+import com.emenjivar.luminar.screen.camera.ui.MessageHistory
+import com.emenjivar.luminar.screen.camera.ui.MessageInputControllers
 import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
 import com.emenjivar.luminar.ui.components.MorseText
-import com.emenjivar.luminar.ui.components.SwitchButton
 import com.emenjivar.luminar.ui.components.rememberCustomDialogController
+import com.emenjivar.luminar.ui.theme.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -117,7 +128,6 @@ fun CameraScreenContent(
 
     // TODO: this remember will restart the camera at least 2 times.
     val imageAnalysis = remember(circularityRange, blobAreaRange) {
-        Log.wtf("CameraScreen", "circularity: $circularityRange, range: $blobAreaRange")
         CustomImageAnalyzer(
             blobParameters = SimpleBlobDetector_Params().apply {
                 _filterByCircularity = true
@@ -179,20 +189,19 @@ fun CameraScreenContent(
                 title = {},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.2f))
-                            .padding(8.dp)
-                            .clickable {
-                                onNavigateToSettings()
-                            },
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color.Black.copy(
+                                alpha = ALPHA_SETTINGS_BUTTON
+                            )
+                        ),
+                        onClick = { onNavigateToSettings() }
                     ) {
                         Icon(
                             modifier = Modifier
                                 .clip(CircleShape),
                             painter = painterResource(id = R.drawable.ic_settings),
-                            contentDescription = "Settings",
+                            contentDescription = stringResource(id = R.string.content_description_settings),
                             tint = Color.White
                         )
                     }
@@ -203,7 +212,6 @@ fun CameraScreenContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues.calculateBottomPadding())
         ) {
             DualCameraPreview(
                 isDebugEnabled = isDebugEnabled.value,
@@ -232,25 +240,39 @@ fun CameraScreenContent(
                 }
             )
 
-            MessageHistory(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter),
-                messages = messages,
-                verticalScroll = verticalScroll
-            )
-            SwitchButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd),
-                text = "Debug",
-                isEnabled = isDebugEnabled.value,
-                onEnable = { isEnabled ->
-                    isDebugEnabled.value = isEnabled
-                }
-            )
 
+            // Controls and message history
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(
+                        top = 8.dp,
+                        bottom = paddingValues.calculateBottomPadding()
+                    )
+                    .padding(horizontal = 8.dp)
+                    .align(Alignment.BottomCenter)
+                    .imePadding(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                MessageHistory(
+                    messages = messages,
+                    verticalScroll = verticalScroll
+                )
+                MessageInputControllers(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    onClickSend = {}
+                )
+            }
+
+            // Morse indicator
             if (debugMorse.isNotBlank()) {
                 MorseText(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .imePadding(),
                     text = debugMorse
                 )
             }
@@ -272,6 +294,35 @@ fun CameraScreenContent(
             onClick = {}
         )
     )
+}
+
+private const val ALPHA_SETTINGS_BUTTON = 0.2f
+
+// This preview fails due to the permissionRequest
+@Preview
+@Composable
+private fun CameraScreenPreview() {
+    AppTheme {
+        CameraScreenContent(
+            uiState = CameraUiState(
+                morseCharacter = MutableStateFlow(MorseCharacter.DIT),
+                lastDuration = MutableStateFlow(0L),
+                messages = MutableStateFlow(listOf("hello", "how are you", "good bye")),
+                debugMorse = MutableStateFlow("-"),
+                timingData = MutableStateFlow(TimingData(dit = 0L)),
+                circularityRange = MutableStateFlow(Range(0f, 1f)),
+                blobAreaRange = MutableStateFlow(Range(0f, 1f)),
+                lightBPM = MutableStateFlow(60),
+                addFlashState = {},
+                finishLetter = {},
+                finishWord = {},
+                finishMessage = {},
+                clearText = {},
+                onReset = {}
+            ),
+            onNavigateToSettings = {}
+        )
+    }
 }
 
 @Serializable

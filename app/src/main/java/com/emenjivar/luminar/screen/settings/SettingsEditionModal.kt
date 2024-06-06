@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.emenjivar.luminar.ext.twoDecimals
 import com.emenjivar.luminar.ui.components.buttons.ActionButton
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 import kotlin.math.roundToInt
 
 @Composable
@@ -50,10 +50,12 @@ fun SettingsEditionModal(
         mutableStateOf<SettingsSliderSelection>(SettingsSliderSelection.Single(0))
     }
     val textMeasure = rememberTextMeasurer()
-    val sliderSelectorTextStyle = TextStyle(
-        color = Color.White,
-        fontSize = tooltipFontSize
-    )
+    val sliderSelectorTextStyle = remember {
+        AppTypography.captionCaption.copy(
+            fontSize = tooltipFontSize,
+            color = Color.White
+        )
+    }
 
     Column(
         modifier = modifier
@@ -65,7 +67,7 @@ fun SettingsEditionModal(
     ) {
         Text(
             text = title,
-            fontWeight = FontWeight.Bold,
+            style = AppTypography.h1,
             textAlign = TextAlign.Center
         )
 

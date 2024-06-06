@@ -1,6 +1,7 @@
 package com.emenjivar.luminar.screen.camera.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -22,11 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 
 /**
  * Input field and send button.
@@ -49,6 +50,7 @@ fun MessageInputControllers(
         BasicTextField(
             modifier = Modifier.weight(1f),
             value = fieldValue.value,
+            textStyle = AppTypography.captionCaption,
             onValueChange = {
                 fieldValue.value = it
             },
@@ -57,7 +59,12 @@ fun MessageInputControllers(
                     modifier = Modifier
                         .height(inputHeight)
                         .background(color = Color.White, shape = CircleShape)
-                        .padding(horizontal = 10.dp),
+                        .border(
+                            width = 1.dp,
+                            color = Color.Black.copy(alpha = BORDER_ALPHA),
+                            shape = CircleShape
+                        )
+                        .padding(horizontal = horizontalPaddingText),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     innerTextField()
@@ -65,7 +72,7 @@ fun MessageInputControllers(
                     if (fieldValue.value.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.placeholder_message),
-                            style = TextStyle.Default,
+                            style = AppTypography.captionButton,
                             color = Color.Black.copy(alpha = PLACEHOLDER_ALPHA)
                         )
                     }
@@ -77,8 +84,8 @@ fun MessageInputControllers(
             modifier = Modifier.size(inputHeight),
             onClick = { onClickSend(fieldValue.value) },
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = Color.Black,
-                containerColor = Color.White
+                contentColor = Color.White,
+                containerColor = Color.Black
             )
         ) {
             Icon(
@@ -90,6 +97,9 @@ fun MessageInputControllers(
 }
 
 private val inputHeight = 50.dp
+private val horizontalPaddingText = 16.dp
+
+private const val BORDER_ALPHA = 0.2f
 private const val PLACEHOLDER_ALPHA = 0.7f
 
 @Preview

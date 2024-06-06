@@ -34,6 +34,7 @@ import com.emenjivar.luminar.R
 import com.emenjivar.luminar.ext.twoDecimals
 import com.emenjivar.luminar.ui.components.buttons.ActionButton
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -69,7 +70,8 @@ fun SettingsContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(id = R.string.settings_title)
+                        text = stringResource(id = R.string.settings_title),
+                        style = AppTypography.h1
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.ui.shapes.MessageShape
 import com.emenjivar.luminar.ui.shapes.TipOrientation
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.latoFamily
 
 @Composable
 fun MessageBubble(
@@ -63,7 +64,8 @@ fun MessageBubble(
     ) {
         Text(
             text = message,
-            color = Color.White
+            color = Color.White,
+            fontFamily = latoFamily
         )
     }
 }

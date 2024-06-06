@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.emenjivar.luminar.ui.theme.AppTheme
+import com.emenjivar.luminar.ui.theme.AppTypography
 
 /**
  * Used for displaying a floating text in a rounded background component.
@@ -29,7 +29,7 @@ fun MorseText(
             )
             .padding(horizontal = horizontalPaddingMorseText),
         text = text,
-        fontSize = fontSizeMorseText,
+        style = AppTypography.h1,
         fontWeight = FontWeight.Bold,
         color = Color.White
     )
@@ -37,7 +37,6 @@ fun MorseText(
 
 private val roundedShape = 15.dp
 private val horizontalPaddingMorseText = 15.dp
-private val fontSizeMorseText = 25.sp
 
 @Preview
 @Composable

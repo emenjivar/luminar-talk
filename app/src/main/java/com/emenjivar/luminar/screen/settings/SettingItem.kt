@@ -38,7 +38,7 @@ fun SettingItem(
         ) {
             Text(
                 text = title,
-                style = AppTypography.h1
+                style = AppTypography.h2
             )
             Text(
                 text = value,

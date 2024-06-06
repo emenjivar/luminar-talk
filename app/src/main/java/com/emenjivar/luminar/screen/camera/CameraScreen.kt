@@ -5,8 +5,6 @@ import android.graphics.Bitmap
 import android.util.Range
 import android.widget.ImageView
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -189,14 +189,13 @@ fun CameraScreenContent(
                 title = {},
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(Color.Black.copy(alpha = 0.2f))
-                            .padding(8.dp)
-                            .clickable {
-                                onNavigateToSettings()
-                            },
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = Color.Black.copy(
+                                alpha = ALPHA_SETTINGS_BUTTON
+                            )
+                        ),
+                        onClick = { onNavigateToSettings() }
                     ) {
                         Icon(
                             modifier = Modifier
@@ -296,6 +295,8 @@ fun CameraScreenContent(
         )
     )
 }
+
+private const val ALPHA_SETTINGS_BUTTON = 0.2f
 
 // This preview fails due to the permissionRequest
 @Preview

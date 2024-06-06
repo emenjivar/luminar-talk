@@ -29,6 +29,7 @@ val Typography = Typography()
 @Immutable
 data class CustomTypography(
     val h1: TextStyle,
+    val h2: TextStyle,
     val captionButton: TextStyle,
     val captionCaption: TextStyle
 )
@@ -41,17 +42,24 @@ val AppTypography = CustomTypography(
         fontSize = 22.sp,
         lineHeight = 28.sp
     ),
-    captionButton = TextStyle(
+    h2 = TextStyle(
         fontFamily = latoFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.1.sp
+    ),
+    captionButton = TextStyle(
+        fontFamily = latoFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     captionCaption = TextStyle(
         fontFamily = latoFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
+        fontSize = 14.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )

@@ -72,7 +72,7 @@ fun MessageInputControllers(
                     if (fieldValue.value.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.placeholder_message),
-                            style = AppTypography.captionButton,
+                            style = AppTypography.captionCaption,
                             color = Color.Black.copy(alpha = PLACEHOLDER_ALPHA)
                         )
                     }

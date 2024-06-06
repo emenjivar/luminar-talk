@@ -23,6 +23,7 @@ style:
   UnusedPrivateMember:
     ignoreAnnotated:
       - Preview
+      - PreviewLightDark
   MagicNumber:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true

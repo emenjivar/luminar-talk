@@ -5,10 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.emenjivar.luminar.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint

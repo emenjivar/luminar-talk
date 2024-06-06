@@ -1,6 +1,5 @@
 package com.emenjivar.luminar.screen.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.emenjivar.luminar.ext.twoDecimals
@@ -57,103 +58,105 @@ fun SettingsEditionModal(
         )
     }
 
-    Column(
-        modifier = modifier
-            .background(Color.White)
-            .padding(
-                horizontal = horizontalPadding,
-                vertical = verticalPadding
+    Surface(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .padding(
+                    horizontal = horizontalPadding,
+                    vertical = verticalPadding
+                )
+        ) {
+            Text(
+                text = title,
+                style = AppTypography.h1,
+                textAlign = TextAlign.Center
             )
-    ) {
-        Text(
-            text = title,
-            style = AppTypography.h1,
-            textAlign = TextAlign.Center
-        )
 
-        when (initialSelection) {
-            is SettingsSliderSelection.Single -> {
-                val sliderState = remember(initialSelection.value) {
-                    mutableFloatStateOf(initialSelection.value.toFloat())
-                }
-                Slider(
-                    modifier = Modifier
-                        .padding(top = sliderSelectorHeight)
-                        .drawToolTip(
-                            text = "${sliderState.floatValue.roundToInt()}",
-                            value = { sliderState.floatValue },
-                            min = min,
-                            max = max,
-                            textMeasurer = textMeasure,
-                            textStyle = sliderSelectorTextStyle
-                        ),
-                    value = sliderState.floatValue,
-                    valueRange = min..max,
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.Black,
-                        activeTrackColor = Color.Black
-                    ),
-                    onValueChange = {
-                        sliderState.floatValue = it
-                    },
-                    onValueChangeFinished = {
-                        sliderSelection.value = SettingsSliderSelection.Single(
-                            value = sliderState.floatValue.roundToInt()
-                        )
+            when (initialSelection) {
+                is SettingsSliderSelection.Single -> {
+                    val sliderState = remember(initialSelection.value) {
+                        mutableFloatStateOf(initialSelection.value.toFloat())
                     }
-                )
+                    Slider(
+                        modifier = Modifier
+                            .padding(top = sliderSelectorHeight)
+                            .drawToolTip(
+                                text = "${sliderState.floatValue.roundToInt()}",
+                                value = { sliderState.floatValue },
+                                min = min,
+                                max = max,
+                                textMeasurer = textMeasure,
+                                textStyle = sliderSelectorTextStyle
+                            ),
+                        value = sliderState.floatValue,
+                        valueRange = min..max,
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color.Black,
+                            activeTrackColor = Color.Black
+                        ),
+                        onValueChange = {
+                            sliderState.floatValue = it
+                        },
+                        onValueChangeFinished = {
+                            sliderSelection.value = SettingsSliderSelection.Single(
+                                value = sliderState.floatValue.roundToInt()
+                            )
+                        }
+                    )
+                }
+
+                is SettingsSliderSelection.Range -> {
+                    val sliderState = remember(initialSelection.range) {
+                        mutableStateOf(initialSelection.range)
+                    }
+                    RangeSlider(
+                        modifier = Modifier
+                            .padding(top = sliderSelectorHeight)
+                            .drawToolTip(
+                                text = sliderState.value.start.twoDecimals(),
+                                value = { sliderState.value.start },
+                                min = min,
+                                max = max,
+                                textMeasurer = textMeasure,
+                                textStyle = sliderSelectorTextStyle
+                            )
+                            .drawToolTip(
+                                text = sliderState.value.endInclusive.twoDecimals(),
+                                value = { sliderState.value.endInclusive },
+                                min = min,
+                                max = max,
+                                textMeasurer = textMeasure,
+                                textStyle = sliderSelectorTextStyle
+                            ),
+                        value = sliderState.value,
+                        valueRange = min..max,
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color.Black,
+                            activeTrackColor = Color.Black
+                        ),
+                        onValueChange = {
+                            sliderState.value = it
+                        },
+                        onValueChangeFinished = {
+                            sliderSelection.value = SettingsSliderSelection.Range(sliderState.value)
+                        }
+                    )
+                }
             }
 
-            is SettingsSliderSelection.Range -> {
-                val sliderState = remember(initialSelection.range) {
-                    mutableStateOf(initialSelection.range)
-                }
-                RangeSlider(
-                    modifier = Modifier
-                        .padding(top = sliderSelectorHeight)
-                        .drawToolTip(
-                            text = sliderState.value.start.twoDecimals(),
-                            value = { sliderState.value.start },
-                            min = min,
-                            max = max,
-                            textMeasurer = textMeasure,
-                            textStyle = sliderSelectorTextStyle
-                        )
-                        .drawToolTip(
-                            text = sliderState.value.endInclusive.twoDecimals(),
-                            value = { sliderState.value.endInclusive },
-                            min = min,
-                            max = max,
-                            textMeasurer = textMeasure,
-                            textStyle = sliderSelectorTextStyle
-                        ),
-                    value = sliderState.value,
-                    valueRange = min..max,
-                    colors = SliderDefaults.colors(
-                        thumbColor = Color.Black,
-                        activeTrackColor = Color.Black
-                    ),
-                    onValueChange = {
-                        sliderState.value = it
-                    },
-                    onValueChangeFinished = {
-                        sliderSelection.value = SettingsSliderSelection.Range(sliderState.value)
-                    }
-                )
-            }
+            ActionButton(
+                text = "Save",
+                isPrimaryAction = true,
+                onClick = { onSaveClick(sliderSelection.value) }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ActionButton(
+                text = "Cancel",
+                isPrimaryAction = false,
+                onClick = onCancelClick
+            )
         }
 
-        ActionButton(
-            text = "Save",
-            isPrimaryAction = true,
-            onClick = { onSaveClick(sliderSelection.value) }
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        ActionButton(
-            text = "Cancel",
-            isPrimaryAction = false,
-            onClick = onCancelClick
-        )
     }
 }
 
@@ -248,7 +251,7 @@ private val sliderSelectorRadius = 15.dp
 private val tooltipHorizontalPadding = 20.dp
 private val tooltipFontSize = 12.sp
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SettingsEditionModalPreview() {
     AppTheme {
@@ -263,6 +266,7 @@ private fun SettingsEditionModalPreview() {
     }
 }
 
+@PreviewLightDark
 @Preview
 @Composable
 private fun SettingsEditionModal50Preview() {

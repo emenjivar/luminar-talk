@@ -4,6 +4,7 @@ import android.Manifest
 import android.graphics.Bitmap
 import android.util.Range
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +53,7 @@ import com.emenjivar.luminar.screen.camera.ui.DualCameraPreview
 import com.emenjivar.luminar.screen.camera.ui.LiveCameraPreview
 import com.emenjivar.luminar.screen.camera.ui.MessageHistory
 import com.emenjivar.luminar.screen.camera.ui.MessageInputControllers
+import com.emenjivar.luminar.screen.camera.ui.rememberLiveCameraController
 import com.emenjivar.luminar.screen.settings.SettingsRoute
 import com.emenjivar.luminar.ui.components.CustomDialog
 import com.emenjivar.luminar.ui.components.CustomDialogAction
@@ -119,6 +121,8 @@ fun CameraScreenContent(
         mutableStateOf<Bitmap?>(null)
     }
     val isFlashTurnOn = remember { mutableStateOf(false) }
+    val cameraController = rememberLiveCameraController()
+    val hasFlashTorchAvailable by cameraController.hasFlashTorchAvailable.collectAsStateWithLifecycle()
 
     val previewView = remember {
         PreviewView(context).apply {
@@ -182,6 +186,16 @@ fun CameraScreenContent(
         }
     }
 
+    LaunchedEffect(hasFlashTorchAvailable) {
+        if (hasFlashTorchAvailable == false) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.error_torch_unavailable),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
     Scaffold(
         contentColor = Color.Transparent,
         topBar = {
@@ -220,7 +234,8 @@ fun CameraScreenContent(
                         modifier = modifier,
                         previewView = previewView,
                         analyzer = imageAnalysis,
-                        permissionState = permissionState
+                        permissionState = permissionState,
+                        controller = cameraController
                     )
                 },
                 debugPreview = { modifier ->
@@ -261,8 +276,8 @@ fun CameraScreenContent(
                     verticalScroll = verticalScroll
                 )
                 MessageInputControllers(
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
+                    isEnabled = hasFlashTorchAvailable ?: false,
                     onClickSend = {}
                 )
             }

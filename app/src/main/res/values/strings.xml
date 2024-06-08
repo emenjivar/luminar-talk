@@ -24,4 +24,6 @@
     <string name="content_description_settings">Open settings</string>
     <string name="content_description_emit">Emit message using the flashlight of the device.</string>
     <string name="content_description_back">Navigate back</string>
+
+    <string name="error_torch_unavailable">Torch unavailable on this device. Messages cannot be emitted.</string>
 </resources>

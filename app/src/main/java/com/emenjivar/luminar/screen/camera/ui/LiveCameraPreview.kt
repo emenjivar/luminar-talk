@@ -17,13 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -40,11 +44,13 @@ fun LiveCameraPreview(
     previewView: PreviewView,
     analyzer: Analyzer,
     permissionState: PermissionState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    controller: LiveCameraPreviewController = rememberLiveCameraController()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    val isTorchEnabled by controller.isTorchEnabled.collectAsStateWithLifecycle()
     val preview = remember { Preview.Builder().build() }
     val imageCapture = remember { ImageCapture.Builder().build() }
     val cameraSelector = remember {
@@ -81,7 +87,18 @@ fun LiveCameraPreview(
                 imageCapture = imageCapture,
                 imageAnalysis = imageAnalysis
             )
+
+            // Send a signal to verify the flashlight availability outside this composable
+            val hasFlashUnit = camera?.cameraInfo?.hasFlashUnit() ?: false
+            controller.setFlashTorchAvailability(hasFlashUnit)
         }
+    }
+
+    LaunchedEffect(isTorchEnabled) {
+        if (camera?.cameraInfo?.hasFlashUnit() != true) {
+            return@LaunchedEffect
+        }
+        camera?.cameraControl?.enableTorch(isTorchEnabled)
     }
 
     AndroidView(
@@ -121,3 +138,44 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
         }, ContextCompat.getMainExecutor(this))
     }
 
+/**
+ * Used for control the camera instance.
+ */
+class LiveCameraPreviewController {
+    private val _isTorchEnabled = MutableStateFlow(false)
+
+    /**
+     * Indicates the status of the torch.
+     */
+    val isTorchEnabled = _isTorchEnabled.asStateFlow()
+
+    private val _hasFlashTorchAvailable = MutableStateFlow<Boolean?>(null)
+
+    /**
+     * A state flow that emits whether the flash torch is available on the device.
+     */
+    val hasFlashTorchAvailable = _hasFlashTorchAvailable.asStateFlow()
+
+    /**
+     * Enable the torch (flashlight) on the device.
+     */
+    fun enableTorch() {
+        _isTorchEnabled.update { true }
+    }
+
+    /**
+     * Disable the torch (flashlight) on the device.
+     */
+    fun disableTorch() {
+        _isTorchEnabled.update { false }
+    }
+
+    fun setFlashTorchAvailability(value: Boolean) {
+        _hasFlashTorchAvailable.update { value }
+    }
+}
+
+@Composable
+fun rememberLiveCameraController() = remember {
+    LiveCameraPreviewController()
+}

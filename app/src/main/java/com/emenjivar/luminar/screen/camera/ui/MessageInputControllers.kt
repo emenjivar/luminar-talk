@@ -32,12 +32,14 @@ import com.emenjivar.luminar.ui.theme.AppTypography
 /**
  * Input field and send button.
  * @param initialValue Initial text displayed on the input.
+ * @param isEnabled Whether the input field and send buttons are enabled.
  * @param onClickSend Callback called when click on the button, contains the inputField text.
  */
 @Composable
 fun MessageInputControllers(
     modifier: Modifier = Modifier,
     initialValue: String = "",
+    isEnabled: Boolean = true,
     onClickSend: (String) -> Unit
 ) {
     val fieldValue = remember { mutableStateOf(initialValue) }
@@ -50,6 +52,7 @@ fun MessageInputControllers(
         BasicTextField(
             modifier = Modifier.weight(1f),
             value = fieldValue.value,
+            enabled = isEnabled,
             textStyle = AppTypography.captionCaption,
             onValueChange = {
                 fieldValue.value = it
@@ -82,6 +85,7 @@ fun MessageInputControllers(
 
         IconButton(
             modifier = Modifier.size(inputHeight),
+            enabled = isEnabled,
             onClick = { onClickSend(fieldValue.value) },
             colors = IconButtonDefaults.iconButtonColors(
                 contentColor = Color.White,
@@ -108,6 +112,18 @@ private fun MessageInputPreview() {
     AppTheme {
         MessageInputControllers(
             initialValue = "This is my message",
+            onClickSend = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun MessageInputDisabledPreview() {
+    AppTheme {
+        MessageInputControllers(
+            initialValue = "",
+            isEnabled = false,
             onClickSend = {}
         )
     }

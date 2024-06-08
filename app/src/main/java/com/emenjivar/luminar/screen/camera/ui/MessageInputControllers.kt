@@ -55,7 +55,12 @@ fun MessageInputControllers(
             enabled = isEnabled,
             textStyle = AppTypography.captionCaption,
             onValueChange = {
-                fieldValue.value = it
+                val lastCharacter = it.lastOrNull()
+
+                // Allow only letters or digits
+                if (lastCharacter == null || lastCharacter.isLetterOrDigit()) {
+                    fieldValue.value = it
+                }
             },
             decorationBox = { innerTextField ->
                 Box(

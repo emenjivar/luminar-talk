@@ -26,10 +26,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -44,6 +46,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.emenjivar.luminar.R
@@ -62,12 +67,14 @@ import com.emenjivar.luminar.ui.components.rememberCustomDialogController
 import com.emenjivar.luminar.ui.theme.AppTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.opencv.features2d.SimpleBlobDetector_Params
 
@@ -112,6 +119,7 @@ fun CameraScreenContent(
     val timingData by uiState.timingData.collectAsStateWithLifecycle()
     val circularityRange by uiState.circularityRange.collectAsStateWithLifecycle()
     val blobAreaRange by uiState.blobAreaRange.collectAsStateWithLifecycle()
+    val isLoading by uiState.isLoading.collectAsStateWithLifecycle()
 
     // Remembered values
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
@@ -196,13 +204,23 @@ fun CameraScreenContent(
         }
     }
 
-    LaunchedEffect(Unit) {
-        uiState.emission.collect { isTorchOn ->
-            if (isTorchOn) {
-                cameraController.turnOnTorch()
-            } else {
-                cameraController.turnOffTorch()
+    val coroutineScope = rememberCoroutineScope()
+    var emissionJob by remember { mutableStateOf<Job?>(null) }
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(Unit) {
+        val observer = object : DefaultLifecycleObserver {
+            override fun onPause(owner: LifecycleOwner) {
+                super.onPause(owner)
+
+                // Important to cancel in-progress message emissions when move
+                // to another screen or close the application
+                emissionJob?.cancel()
             }
+        }
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
         }
     }
 
@@ -287,8 +305,24 @@ fun CameraScreenContent(
                 )
                 MessageInputControllers(
                     modifier = Modifier.fillMaxWidth(),
-                    isEnabled = hasFlashTorchAvailable ?: false,
-                    onClickSend = uiState.onTranslateToMorse
+                    isEnabled = hasFlashTorchAvailable ?: false && !isLoading,
+                    isLoading = isLoading,
+                    onClickSend = { message ->
+                        emissionJob = coroutineScope.launch {
+                            uiState.emission.collect { isTorchOn ->
+                                if (isTorchOn) {
+                                    cameraController.turnOnTorch()
+                                } else {
+                                    cameraController.turnOffTorch()
+                                }
+                            }
+                        }
+                        emissionJob?.start()
+                        uiState.onTranslateToMorse(message)
+                    },
+                    onStopEmission = {
+                        emissionJob?.cancel()
+                    }
                 )
             }
 
@@ -339,6 +373,7 @@ private fun CameraScreenPreview() {
                 blobAreaRange = MutableStateFlow(Range(0f, 1f)),
                 lightBPM = MutableStateFlow(60),
                 emission = emptyFlow(),
+                isLoading = MutableStateFlow(false),
                 addFlashState = {},
                 finishLetter = {},
                 finishWord = {},

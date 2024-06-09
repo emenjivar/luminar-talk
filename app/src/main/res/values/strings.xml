@@ -20,6 +20,7 @@
     <string name="settings_field_content_description">Help for %s field</string>
 
     <string name="placeholder_message">Message</string>
+    <string name="placeholder_emitting_message">Emitting message…</string>
 
     <string name="content_description_settings">Open settings</string>
     <string name="content_description_emit">Emit message using the flashlight of the device.</string>

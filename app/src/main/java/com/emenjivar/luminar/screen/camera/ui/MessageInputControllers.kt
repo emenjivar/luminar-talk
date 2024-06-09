@@ -1,5 +1,6 @@
 package com.emenjivar.luminar.screen.camera.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -8,12 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -21,11 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ui.components.buttons.LoadingButton
+import com.emenjivar.luminar.ui.components.buttons.LoadingButtonAction
 import com.emenjivar.luminar.ui.theme.AppTheme
 import com.emenjivar.luminar.ui.theme.AppTypography
 
@@ -40,7 +38,9 @@ fun MessageInputControllers(
     modifier: Modifier = Modifier,
     initialValue: String = "",
     isEnabled: Boolean = true,
-    onClickSend: (String) -> Unit
+    isLoading: Boolean = false,
+    onClickSend: (String) -> Unit,
+    onStopEmission: () -> Unit
 ) {
     val fieldValue = remember { mutableStateOf(initialValue) }
 
@@ -52,7 +52,7 @@ fun MessageInputControllers(
         BasicTextField(
             modifier = Modifier.weight(1f),
             value = fieldValue.value,
-            enabled = isEnabled,
+            enabled = isEnabled && !isLoading,
             textStyle = AppTypography.captionCaption,
             onValueChange = {
                 val lastCharacter = it.lastOrNull()
@@ -79,7 +79,13 @@ fun MessageInputControllers(
 
                     if (fieldValue.value.isEmpty()) {
                         Text(
-                            text = stringResource(id = R.string.placeholder_message),
+                            text = stringResource(
+                                id = if (isLoading) {
+                                    R.string.placeholder_emitting_message
+                                } else {
+                                    R.string.placeholder_message
+                                }
+                            ),
                             style = AppTypography.captionCaption,
                             color = Color.Black.copy(alpha = PLACEHOLDER_ALPHA)
                         )
@@ -88,20 +94,21 @@ fun MessageInputControllers(
             }
         )
 
-        IconButton(
-            modifier = Modifier.size(inputHeight),
-            enabled = isEnabled,
-            onClick = { onClickSend(fieldValue.value) },
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = Color.White,
-                containerColor = Color.Black
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_send),
-                contentDescription = stringResource(id = R.string.content_description_emit)
-            )
-        }
+        LoadingButton(
+            isLoading = isLoading,
+            onClick = { action ->
+                when (action) {
+                    LoadingButtonAction.CLICK -> {
+                        onClickSend(fieldValue.value)
+
+                        // Clear the input
+                        fieldValue.value = ""
+                    }
+
+                    LoadingButtonAction.STOP_CLICK -> onStopEmission()
+                }
+            }
+        )
     }
 }
 
@@ -117,7 +124,8 @@ private fun MessageInputPreview() {
     AppTheme {
         MessageInputControllers(
             initialValue = "This is my message",
-            onClickSend = {}
+            onClickSend = {},
+            onStopEmission = {}
         )
     }
 }
@@ -129,7 +137,8 @@ private fun MessageInputDisabledPreview() {
         MessageInputControllers(
             initialValue = "",
             isEnabled = false,
-            onClickSend = {}
+            onClickSend = {},
+            onStopEmission = {}
         )
     }
 }
@@ -140,7 +149,8 @@ private fun MessageInputPlaceholderPreview() {
     AppTheme {
         MessageInputControllers(
             initialValue = "",
-            onClickSend = {}
+            onClickSend = {},
+            onStopEmission = {}
         )
     }
 }

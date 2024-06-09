@@ -2,6 +2,7 @@ package com.emenjivar.luminar.screen.camera
 
 import android.util.Range
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class CameraUiState(
@@ -14,6 +15,7 @@ data class CameraUiState(
     val blobAreaRange: StateFlow<Range<Float>>,
     val lightBPM: StateFlow<Int>,
     val emission: Flow<Boolean>,
+    val isLoading: MutableStateFlow<Boolean>,
     val addFlashState : (isTurnOn: Boolean) -> Unit,
     val finishLetter: () -> Unit,
     val finishWord: () -> Unit,

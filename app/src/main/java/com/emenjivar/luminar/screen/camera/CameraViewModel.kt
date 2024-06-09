@@ -1,5 +1,6 @@
 package com.emenjivar.luminar.screen.camera
 
+import android.util.Log
 import android.util.Range
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,16 +9,17 @@ import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -106,7 +108,8 @@ class CameraViewModel @Inject constructor(
     private val minAllowedArea = 0.01f
     private val blobAreaRange = settings.getBlobRadius()
         .map { range ->
-            val minArea = (Math.PI * range.lower * range.lower).toFloat().coerceAtLeast(minAllowedArea)
+            val minArea =
+                (Math.PI * range.lower * range.lower).toFloat().coerceAtLeast(minAllowedArea)
             val maxArea = (Math.PI * range.upper * range.upper).toFloat()
             Range(minArea, maxArea)
         }
@@ -134,6 +137,8 @@ class CameraViewModel @Inject constructor(
         initialValue = TimingData(DEFAULT_DIT_TIME)
     )
 
+    private val isLoading = MutableStateFlow(false)
+
     /**
      * Flow that emit the encoded message into boolean values, used for controlling the torch.
      */
@@ -143,12 +148,14 @@ class CameraViewModel @Inject constructor(
             flow {
                 if (encodedMessage.isEmpty()) return@flow
 
-                encodedMessage.map { wordInMorse ->
+                isLoading.update { true }
+                encodedMessage.mapIndexed { index, wordInMorse ->
                     if (wordInMorse.isEmpty()) {
                         delay(timingData.value.spaceWord)
                     }
 
                     wordInMorse.forEach { morse ->
+                        Log.wtf("CameraViewModel", "emission in progress :$morse")
                         emit(true)
                         when (morse) {
                             Morse.DOT -> delay(timingData.value.dit)
@@ -160,11 +167,14 @@ class CameraViewModel @Inject constructor(
                         delay(timingData.value.dit)
                     }
 
-                    delay(timingData.value.spaceLetter)
+                    if (index < encodedMessage.size - 1) {
+                        delay(timingData.value.spaceLetter)
+                    }
                 }
                 this@CameraViewModel.encodedMessage.update { emptyList() }
+                isLoading.update { false }
             }
-        }
+        }.onCompletion { isLoading.update { false } }
 
     private fun onReset() {
         viewModelScope.launch {
@@ -260,6 +270,7 @@ class CameraViewModel @Inject constructor(
         blobAreaRange = blobAreaRange,
         lightBPM = lightBPM,
         emission = emission,
+        isLoading = isLoading,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,

@@ -16,4 +16,6 @@ interface TranslatorRepository {
      * Add a new morse code to the three in memory.
      */
     fun add(morse: MorseDictionary)
+
+    fun charToMorse(char: Char): List<Morse>
 }

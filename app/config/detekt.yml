@@ -5,6 +5,10 @@ config:
 complexity:
   active: true
 
+  CyclomaticComplexMethod:
+    ignoreAnnotated:
+      - Composable
+
   LongParameterList:
     functionThreshold: 8
     ignoreAnnotated:

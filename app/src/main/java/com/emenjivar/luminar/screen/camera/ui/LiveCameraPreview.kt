@@ -159,14 +159,14 @@ class LiveCameraPreviewController {
     /**
      * Enable the torch (flashlight) on the device.
      */
-    fun enableTorch() {
+    fun turnOnTorch() {
         _isTorchEnabled.update { true }
     }
 
     /**
      * Disable the torch (flashlight) on the device.
      */
-    fun disableTorch() {
+    fun turnOffTorch() {
         _isTorchEnabled.update { false }
     }
 

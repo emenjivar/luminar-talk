@@ -65,6 +65,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.Serializable
@@ -84,7 +85,6 @@ fun CameraScreen(
 }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
-@androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
 @Composable
 fun CameraScreenContent(
     uiState: CameraUiState,
@@ -196,6 +196,16 @@ fun CameraScreenContent(
         }
     }
 
+    LaunchedEffect(Unit) {
+        uiState.emission.collect { isTorchOn ->
+            if (isTorchOn) {
+                cameraController.turnOnTorch()
+            } else {
+                cameraController.turnOffTorch()
+            }
+        }
+    }
+
     Scaffold(
         contentColor = Color.Transparent,
         topBar = {
@@ -278,7 +288,7 @@ fun CameraScreenContent(
                 MessageInputControllers(
                     modifier = Modifier.fillMaxWidth(),
                     isEnabled = hasFlashTorchAvailable ?: false,
-                    onClickSend = {}
+                    onClickSend = uiState.onTranslateToMorse
                 )
             }
 
@@ -328,11 +338,13 @@ private fun CameraScreenPreview() {
                 circularityRange = MutableStateFlow(Range(0f, 1f)),
                 blobAreaRange = MutableStateFlow(Range(0f, 1f)),
                 lightBPM = MutableStateFlow(60),
+                emission = emptyFlow(),
                 addFlashState = {},
                 finishLetter = {},
                 finishWord = {},
                 finishMessage = {},
                 clearText = {},
+                onTranslateToMorse = {},
                 onReset = {}
             ),
             onNavigateToSettings = {}

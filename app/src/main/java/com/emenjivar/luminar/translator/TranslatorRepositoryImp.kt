@@ -24,9 +24,13 @@ class TranslatorRepositoryImp @Inject constructor(
         char = MorseDictionary.T.char
     )
 
+    private val mapCharacters = MorseDictionary.entries
+        .toTypedArray()
+        .associate { it.char to it.morseCharacters() }
+
     init {
         if (initTree) {
-            MorseDictionary.values().onEach { morse ->
+            MorseDictionary.entries.toTypedArray().onEach { morse ->
                 add(morse)
             }
         }
@@ -55,6 +59,8 @@ class TranslatorRepositoryImp @Inject constructor(
         }
         add(morse.char, ArrayDeque(morse.morseCharacters()), root)
     }
+
+    override fun charToMorse(char: Char) = mapCharacters[char].orEmpty()
 
     private fun find(list: ArrayDeque<Morse>, node: Node?, depth: Int = 1): Char? {
         if (node == null) return null

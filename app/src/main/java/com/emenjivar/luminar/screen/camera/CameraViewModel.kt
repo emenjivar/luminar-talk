@@ -7,13 +7,17 @@ import com.emenjivar.luminar.data.SettingPreferences
 import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,6 +32,9 @@ class CameraViewModel @Inject constructor(
     // Indicates a list of morse that make up a single letter o number
     private val listMorse = mutableListOf<Morse>()
     private val debugMorse = MutableStateFlow("")
+
+    // Input message encoded into morse characters
+    private val encodedMessage = MutableStateFlow<List<List<Morse>>>(emptyList())
 
     // Store the list of messages
     private val messages = morseCharacter
@@ -117,7 +124,8 @@ class CameraViewModel @Inject constructor(
         )
 
     private val timingData = lightBPM.map { bpm ->
-        bpm / SECOND_PER_MINUTE * MILLISECOND_PER_SECOND
+        val ditMilliseconds = MILLISECOND_PER_SECOND / (bpm / SECOND_PER_MINUTE.toFloat())
+        ditMilliseconds.toLong()
     }.map { dit ->
         TimingData(dit)
     }.stateIn(
@@ -125,6 +133,38 @@ class CameraViewModel @Inject constructor(
         started = SharingStarted.Lazily,
         initialValue = TimingData(DEFAULT_DIT_TIME)
     )
+
+    /**
+     * Flow that emit the encoded message into boolean values, used for controlling the torch.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val emission = encodedMessage
+        .flatMapMerge { encodedMessage ->
+            flow {
+                if (encodedMessage.isEmpty()) return@flow
+
+                encodedMessage.map { wordInMorse ->
+                    if (wordInMorse.isEmpty()) {
+                        delay(timingData.value.spaceWord)
+                    }
+
+                    wordInMorse.forEach { morse ->
+                        emit(true)
+                        when (morse) {
+                            Morse.DOT -> delay(timingData.value.dit)
+                            Morse.DASH -> delay(timingData.value.dah)
+                        }
+                        emit(false)
+
+                        // Every morse character must be separated by a silent dit
+                        delay(timingData.value.dit)
+                    }
+
+                    delay(timingData.value.spaceLetter)
+                }
+                this@CameraViewModel.encodedMessage.update { emptyList() }
+            }
+        }
 
     private fun onReset() {
         viewModelScope.launch {
@@ -196,6 +236,15 @@ class CameraViewModel @Inject constructor(
         morseCharacter.update { MorseCharacter.LETTER_SPACE }
     }
 
+    private fun onTranslateToMorse(value: String) {
+        val convertedData = value.map { character ->
+            // Empty list means a black space in the string.
+            translatorRepository.charToMorse(character)
+        }
+
+        encodedMessage.update { convertedData }
+    }
+
     private fun clearText() {
         // TODO: send here a signal to clear the text
 //        sentence.update { "" }
@@ -210,11 +259,13 @@ class CameraViewModel @Inject constructor(
         circularityRange = circularityRange,
         blobAreaRange = blobAreaRange,
         lightBPM = lightBPM,
+        emission = emission,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,
         finishMessage = ::finishMessage,
         clearText = ::clearText,
+        onTranslateToMorse = ::onTranslateToMorse,
         onReset = ::onReset
     )
 

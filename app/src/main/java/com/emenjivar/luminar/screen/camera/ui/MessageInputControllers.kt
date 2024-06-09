@@ -57,8 +57,8 @@ fun MessageInputControllers(
             onValueChange = {
                 val lastCharacter = it.lastOrNull()
 
-                // Allow only letters or digits
-                if (lastCharacter == null || lastCharacter.isLetterOrDigit()) {
+                // Allow only letters, digits or spaces
+                if (lastCharacter == null || lastCharacter.isLetterOrDigit() || lastCharacter == ' ') {
                     fieldValue.value = it
                 }
             },

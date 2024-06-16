@@ -1,6 +1,5 @@
 package com.emenjivar.luminar.screen.camera
 
-import android.util.Log
 import android.util.Range
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -155,7 +155,6 @@ class CameraViewModel @Inject constructor(
                     }
 
                     wordInMorse.forEach { morse ->
-                        Log.wtf("CameraViewModel", "emission in progress :$morse")
                         emit(true)
                         when (morse) {
                             Morse.DOT -> delay(timingData.value.dit)
@@ -174,7 +173,9 @@ class CameraViewModel @Inject constructor(
                 this@CameraViewModel.encodedMessage.update { emptyList() }
                 isLoading.update { false }
             }
-        }.onCompletion { isLoading.update { false } }
+        }
+        .cancellable()
+        .onCompletion { isLoading.update { false } }
 
     private fun onReset() {
         viewModelScope.launch {

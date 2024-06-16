@@ -75,6 +75,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.serialization.Serializable
 import org.opencv.features2d.SimpleBlobDetector_Params
 
@@ -310,6 +311,7 @@ fun CameraScreenContent(
                     onClickSend = { message ->
                         emissionJob = coroutineScope.launch {
                             uiState.emission.collect { isTorchOn ->
+                                yield() // Make the coroutine cancellable
                                 if (isTorchOn) {
                                     cameraController.turnOnTorch()
                                 } else {
@@ -322,6 +324,7 @@ fun CameraScreenContent(
                     },
                     onStopEmission = {
                         emissionJob?.cancel()
+                        cameraController.turnOffTorch()
                     }
                 )
             }

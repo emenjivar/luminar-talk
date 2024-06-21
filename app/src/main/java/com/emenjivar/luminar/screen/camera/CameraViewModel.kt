@@ -7,19 +7,24 @@ import com.emenjivar.luminar.data.SettingPreferences
 import com.emenjivar.luminar.translator.TranslatorRepository
 import com.emenjivar.luminar.translator.dictionary.Morse
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,7 +40,10 @@ class CameraViewModel @Inject constructor(
     private val listMorse = mutableListOf<Morse>()
     private val debugMorse = MutableStateFlow("")
 
-    // Input message encoded into morse characters
+    // Input message encoded into morse characters.
+    // encodedMessage contain a list of words decoded in morse.
+    // each word contains a list of morse characters.
+    // ex. "sos e" -> [[...],[---],[---],[],[.]]
     private val encodedMessage = MutableStateFlow<List<List<Morse>>>(emptyList())
 
     // Store the list of messages
@@ -175,7 +183,58 @@ class CameraViewModel @Inject constructor(
             }
         }
         .cancellable()
-        .onCompletion { isLoading.update { false } }
+        .onCompletion {
+            isLoading.update { false }
+            encodedMessage.update { emptyList() }
+        }
+
+    /**
+     * Emit a value from 0f to 1ff indicating the progress of the message emission.
+     * This flows is cancelled when encodedMessage is canceled.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val emissionProgress = encodedMessage.flatMapLatest { message ->
+        if (message.isEmpty()) {
+            return@flatMapLatest flowOf(0f)
+        }
+
+        flow {
+            val flatMorseList = message.flatten() // empty lists are removed from here
+
+            // Calculate total time based on the morse symbols
+            val totalTimeForDots = flatMorseList.count { it == Morse.DOT } * timingData.value.dit
+            val totalTimeForDashes = flatMorseList.count { it == Morse.DASH } * timingData.value.dah
+            val totalTimeForSymbolGaps = (flatMorseList.size - 1) * timingData.value.dit
+            val totalTimeForLetterGaps = if (message.isNotEmpty()) {
+                (message.size - 1) * timingData.value.dit
+            } else {
+                0
+            }
+
+            val totalEmissionTime = totalTimeForDots +
+                    totalTimeForDashes +
+                    totalTimeForSymbolGaps +
+                    totalTimeForLetterGaps
+
+            // Calculate total emission
+            val totalEmissions =
+                (totalEmissionTime / MILLISECOND_PER_SECOND * EMISSIONS_PER_SECOND).toFloat()
+            val delayPerEmission = (totalEmissionTime / totalEmissions).toLong()
+
+            repeat(totalEmissions.toInt()) { index ->
+                yield()
+                val progress = (index + 1) / totalEmissions
+                emit(progress) // from 0f to 1f
+                delay(delayPerEmission)
+            }
+        }
+    }.cancellable()
+        .flowOn(Dispatchers.IO)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = 0f
+        )
 
     private fun onReset() {
         viewModelScope.launch {
@@ -272,6 +331,7 @@ class CameraViewModel @Inject constructor(
         lightBPM = lightBPM,
         emission = emission,
         isLoading = isLoading,
+        emissionProgress = emissionProgress,
         addFlashState = ::addFlashState,
         finishLetter = ::finishLetter,
         finishWord = ::finishWord,
@@ -286,6 +346,7 @@ class CameraViewModel @Inject constructor(
         private const val DEFAULT_DIT_TIME = 1000L
         private const val MILLISECOND_PER_SECOND = 1000L
         private const val DEFAULT_BPM = 60
+        private const val EMISSIONS_PER_SECOND = 16
     }
 }
 

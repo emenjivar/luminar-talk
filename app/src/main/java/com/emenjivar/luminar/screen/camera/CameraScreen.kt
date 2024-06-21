@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ext.isInProgress
 import com.emenjivar.luminar.ext.settingsIntent
 import com.emenjivar.luminar.screen.camera.analyzer.CustomImageAnalyzer
 import com.emenjivar.luminar.screen.camera.ui.DualCameraPreview
@@ -120,7 +122,11 @@ fun CameraScreenContent(
     val timingData by uiState.timingData.collectAsStateWithLifecycle()
     val circularityRange by uiState.circularityRange.collectAsStateWithLifecycle()
     val blobAreaRange by uiState.blobAreaRange.collectAsStateWithLifecycle()
-    val isLoading by uiState.isLoading.collectAsStateWithLifecycle()
+
+    val emissionProgress by uiState.emissionProgress.collectAsStateWithLifecycle()
+    val isLoading by remember {
+        derivedStateOf { emissionProgress.isInProgress() }
+    }
 
     // Remembered values
     val verticalJumpPx = with(LocalDensity.current) { verticalJump.toPx() }
@@ -307,7 +313,7 @@ fun CameraScreenContent(
                 MessageInputControllers(
                     modifier = Modifier.fillMaxWidth(),
                     isEnabled = hasFlashTorchAvailable ?: false && !isLoading,
-                    isLoading = isLoading,
+                    progress = { emissionProgress },
                     onClickSend = { message ->
                         emissionJob = coroutineScope.launch {
                             uiState.emission.collect { isTorchOn ->
@@ -377,6 +383,7 @@ private fun CameraScreenPreview() {
                 lightBPM = MutableStateFlow(60),
                 emission = emptyFlow(),
                 isLoading = MutableStateFlow(false),
+                emissionProgress = MutableStateFlow(0f),
                 addFlashState = {},
                 finishLetter = {},
                 finishWord = {},

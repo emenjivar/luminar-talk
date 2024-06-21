@@ -8,6 +8,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,15 +19,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ext.isInProgress
 import com.emenjivar.luminar.ui.theme.AppTheme
 
 @Composable
 fun LoadingButton(
     modifier: Modifier = Modifier,
     onClick: (action: LoadingButtonAction) -> Unit,
-    isLoading: Boolean
+    progress: () -> Float
 ) {
-
+    val isLoading by remember {
+        derivedStateOf { progress().isInProgress() }
+    }
     Crossfade(
         targetState = isLoading,
         label = "Loading button animation"
@@ -37,7 +43,8 @@ fun LoadingButton(
                 CircularProgressIndicator(
                     modifier = Modifier.size(sizeProgress),
                     strokeWidth = borderProgress,
-                    color = Color.Black
+                    color = Color.Black,
+                    progress = progress
                 )
 
                 IconButton(
@@ -86,7 +93,7 @@ private val buttonPadding = 5.dp
 private fun LoadingButtonStaticPreview() {
     AppTheme {
         LoadingButton(
-            isLoading = false,
+            progress = { 0f },
             onClick = {}
         )
     }
@@ -97,7 +104,7 @@ private fun LoadingButtonStaticPreview() {
 private fun LoadingButtonInProgressPreview() {
     AppTheme {
         LoadingButton(
-            isLoading = true,
+            progress = { 0.5f },
             onClick = {}
         )
     }

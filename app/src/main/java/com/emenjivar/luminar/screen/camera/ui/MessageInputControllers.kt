@@ -1,6 +1,5 @@
 package com.emenjivar.luminar.screen.camera.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.emenjivar.luminar.R
+import com.emenjivar.luminar.ext.isInProgress
 import com.emenjivar.luminar.ui.components.buttons.LoadingButton
 import com.emenjivar.luminar.ui.components.buttons.LoadingButtonAction
 import com.emenjivar.luminar.ui.theme.AppTheme
@@ -38,12 +40,14 @@ fun MessageInputControllers(
     modifier: Modifier = Modifier,
     initialValue: String = "",
     isEnabled: Boolean = true,
-    isLoading: Boolean = false,
     onClickSend: (String) -> Unit,
-    onStopEmission: () -> Unit
+    onStopEmission: () -> Unit,
+    progress: () -> Float,
 ) {
     val fieldValue = remember { mutableStateOf(initialValue) }
-
+    val isLoading by remember {
+        derivedStateOf { progress().isInProgress() }
+    }
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -95,7 +99,7 @@ fun MessageInputControllers(
         )
 
         LoadingButton(
-            isLoading = isLoading,
+            progress = progress,
             onClick = { action ->
                 when (action) {
                     LoadingButtonAction.CLICK -> {
@@ -125,7 +129,8 @@ private fun MessageInputPreview() {
         MessageInputControllers(
             initialValue = "This is my message",
             onClickSend = {},
-            onStopEmission = {}
+            onStopEmission = {},
+            progress = { 0f }
         )
     }
 }
@@ -138,7 +143,8 @@ private fun MessageInputDisabledPreview() {
             initialValue = "",
             isEnabled = false,
             onClickSend = {},
-            onStopEmission = {}
+            onStopEmission = {},
+            progress = { 0f }
         )
     }
 }
@@ -150,7 +156,8 @@ private fun MessageInputPlaceholderPreview() {
         MessageInputControllers(
             initialValue = "",
             onClickSend = {},
-            onStopEmission = {}
+            onStopEmission = {},
+            progress = { 0f }
         )
     }
 }

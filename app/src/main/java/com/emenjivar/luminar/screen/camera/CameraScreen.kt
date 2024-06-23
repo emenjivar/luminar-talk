@@ -124,7 +124,7 @@ fun CameraScreenContent(
     val blobAreaRange by uiState.blobAreaRange.collectAsStateWithLifecycle()
 
     val emissionProgress by uiState.emissionProgress.collectAsStateWithLifecycle()
-    val isLoading by remember {
+    val isEmissionInProgress by remember {
         derivedStateOf { emissionProgress.isInProgress() }
     }
 
@@ -308,11 +308,12 @@ fun CameraScreenContent(
                 Spacer(modifier = Modifier.weight(1f))
                 MessageHistory(
                     messages = messages,
+                    isSendingInProgress = isEmissionInProgress,
                     verticalScroll = verticalScroll
                 )
                 MessageInputControllers(
                     modifier = Modifier.fillMaxWidth(),
-                    isEnabled = hasFlashTorchAvailable ?: false && !isLoading,
+                    isEnabled = hasFlashTorchAvailable ?: false && !isEmissionInProgress,
                     progress = { emissionProgress },
                     onClickSend = { message ->
                         emissionJob = coroutineScope.launch {

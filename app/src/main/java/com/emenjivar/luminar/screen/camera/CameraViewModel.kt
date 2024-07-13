@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,10 +47,10 @@ class CameraViewModel @Inject constructor(
     // encodedMessage contain a list of words decoded in morse.
     // each word contains a list of morse characters.
     // ex. "sos e" -> [[...],[---],[---],[],[.]]
-    private val encodedMessage = MutableStateFlow<List<List<Morse>>>(emptyList())
+    private val encodedMessage = MutableStateFlow(EncodedMessageModel())
 
     // Store the list of messages
-    private val messages = morseCharacter
+    private val receivedMessages = morseCharacter
         .scan(initial = "") { accumulator, morse ->
             when (morse) {
                 MorseCharacter.DIT -> {
@@ -95,11 +98,29 @@ class CameraViewModel @Inject constructor(
             text.split('\n')
                 .filter { it.isNotBlank() }
                 .asReversed()
+        }.map { messages ->
+            messages.map {
+                MessageModel(
+                    text = it,
+                    createdAt = 0L, // TODO: this value should be calculated and stored in memory
+                    isFromCurrentUser = false
+                )
+            }
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily,
             initialValue = emptyList()
         )
+
+    private val sentMessages = MutableStateFlow(emptyList<MessageModel>())
+
+    private val messages = combine(receivedMessages, sentMessages) { received, sent ->
+        (received + sent).sortedBy { it.createdAt }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = emptyList()
+    )
 
     private val minAllowedCircularity = 0.01f
     private val circularityRange = settings.getCircularity()
@@ -154,10 +175,10 @@ class CameraViewModel @Inject constructor(
     private val emission = encodedMessage
         .flatMapMerge { encodedMessage ->
             flow {
-                if (encodedMessage.isEmpty()) return@flow
+                if (encodedMessage.encoded.isEmpty()) return@flow
 
                 isLoading.update { true }
-                encodedMessage.mapIndexed { index, wordInMorse ->
+                encodedMessage.encoded.mapIndexed { index, wordInMorse ->
                     if (wordInMorse.isEmpty()) {
                         delay(timingData.value.spaceWord)
                     }
@@ -174,18 +195,18 @@ class CameraViewModel @Inject constructor(
                         delay(timingData.value.dit)
                     }
 
-                    if (index < encodedMessage.size - 1) {
+                    if (index < encodedMessage.encoded.size - 1) {
                         delay(timingData.value.spaceLetter)
                     }
                 }
-                this@CameraViewModel.encodedMessage.update { emptyList() }
+                this@CameraViewModel.encodedMessage.update { EncodedMessageModel() }
                 isLoading.update { false }
             }
         }
         .cancellable()
         .onCompletion {
             isLoading.update { false }
-            encodedMessage.update { emptyList() }
+            encodedMessage.update { EncodedMessageModel() }
         }
 
     /**
@@ -193,7 +214,8 @@ class CameraViewModel @Inject constructor(
      * This flows is cancelled when encodedMessage is canceled.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val emissionProgress = encodedMessage.flatMapLatest { message ->
+    private val emissionProgress = encodedMessage.flatMapLatest { encoded ->
+        val message = encoded.encoded
         if (message.isEmpty()) {
             return@flatMapLatest flowOf(0f)
         }
@@ -226,6 +248,16 @@ class CameraViewModel @Inject constructor(
                 val progress = (index + 1) / totalEmissions
                 emit(progress) // from 0f to 1f
                 delay(delayPerEmission)
+            }
+
+            sentMessages.update { list ->
+                list + listOf(
+                    MessageModel(
+                        text = encoded.originalText,
+                        isFromCurrentUser = true,
+                        createdAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                    )
+                )
             }
         }
     }.cancellable()
@@ -312,7 +344,9 @@ class CameraViewModel @Inject constructor(
             translatorRepository.charToMorse(character)
         }
 
-        encodedMessage.update { convertedData }
+        encodedMessage.update {
+            EncodedMessageModel(originalText = value, encoded = convertedData)
+        }
     }
 
     private fun clearText() {
@@ -339,6 +373,11 @@ class CameraViewModel @Inject constructor(
         clearText = ::clearText,
         onTranslateToMorse = ::onTranslateToMorse,
         onReset = ::onReset
+    )
+
+    private data class EncodedMessageModel(
+        val originalText: String = "",
+        val encoded: List<List<Morse>> = emptyList()
     )
 
     companion object {

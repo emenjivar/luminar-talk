@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 data class CameraUiState(
     val morseCharacter: StateFlow<MorseCharacter>,
     val lastDuration: StateFlow<Long>,
-    val messages: StateFlow<List<String>>,
+    val messages: StateFlow<List<MessageModel>>,
     val debugMorse: StateFlow<String>,
     val timingData: StateFlow<TimingData>,
     val circularityRange: StateFlow<Range<Float>>,

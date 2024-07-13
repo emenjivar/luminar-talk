@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.emenjivar.luminar.screen.camera.MessageModel
 import com.emenjivar.luminar.ui.components.message.AnimatedTypingIndicator
 import com.emenjivar.luminar.ui.components.message.MessageBubble
 import com.emenjivar.luminar.ui.shapes.MessageShape
@@ -32,7 +33,7 @@ import com.emenjivar.luminar.ui.theme.AppTheme
 @Composable
 @Stable
 fun MessageHistory(
-    messages: List<String>,
+    messages: List<MessageModel>,
     modifier: Modifier = Modifier,
     isSendingInProgress: Boolean = false,
     verticalScroll: ScrollState = rememberScrollState()
@@ -45,7 +46,19 @@ fun MessageHistory(
         verticalArrangement = Arrangement.spacedBy(paddingMessages)
     ) {
         for (message in messages) {
-            MessageBubble(message = message)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = if (message.isFromCurrentUser) {
+                    Arrangement.End
+                } else {
+                    Arrangement.Start
+                }
+            ) {
+                MessageBubble(
+                    message = message.text,
+                    isSentByMe = message.isFromCurrentUser
+                )
+            }
         }
 
         AnimatedVisibility(visible = isSendingInProgress) {
@@ -77,9 +90,18 @@ private fun MessageHistoryPreview() {
     AppTheme {
         MessageHistory(
             messages = listOf(
-                "alpha",
-                "bravo charlie",
-                "delta echo foxtrot"
+                MessageModel(
+                    text = "alpha",
+                    isFromCurrentUser = true
+                ),
+                MessageModel(
+                    text = "bravo charlie",
+                    isFromCurrentUser = false
+                ),
+                MessageModel(
+                    text = "delta echo foxtrot",
+                    isFromCurrentUser = true
+                )
             )
         )
     }
@@ -91,9 +113,18 @@ private fun MessageHistorySendingMessagePreview() {
     AppTheme {
         MessageHistory(
             messages = listOf(
-                "alpha",
-                "bravo charlie",
-                "delta echo foxtrot"
+                MessageModel(
+                    text = "alpha",
+                    isFromCurrentUser = true
+                ),
+                MessageModel(
+                    text = "bravo charlie",
+                    isFromCurrentUser = false
+                ),
+                MessageModel(
+                    text = "delta echo foxtrot",
+                    isFromCurrentUser = true
+                )
             ),
             isSendingInProgress = true
         )

@@ -376,7 +376,22 @@ private fun CameraScreenPreview() {
             uiState = CameraUiState(
                 morseCharacter = MutableStateFlow(MorseCharacter.DIT),
                 lastDuration = MutableStateFlow(0L),
-                messages = MutableStateFlow(listOf("hello", "how are you", "good bye")),
+                messages = MutableStateFlow(
+                    listOf(
+                        MessageModel(
+                            text = "hello",
+                            isFromCurrentUser = false
+                        ),
+                        MessageModel(
+                            text = "how are you?",
+                            isFromCurrentUser = false
+                        ),
+                        MessageModel(
+                            text = "so far so bad",
+                            isFromCurrentUser = false
+                        )
+                    )
+                ),
                 debugMorse = MutableStateFlow("-"),
                 timingData = MutableStateFlow(TimingData(dit = 0L)),
                 circularityRange = MutableStateFlow(Range(0f, 1f)),

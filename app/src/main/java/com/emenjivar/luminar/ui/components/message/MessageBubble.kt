@@ -47,7 +47,7 @@ fun MessageBubble(
     Row(
         modifier = modifier
             .graphicsLayer {
-                this.shadowElevation = 5.dp.toPx()
+                this.shadowElevation = SHADOW_ELEVATION.toPx()
                 this.shape = MessageShape(tipOrientation)
                 this.clip = true
             }
@@ -72,6 +72,7 @@ fun MessageBubble(
 
 private val HORIZONTAL_PADDING = 15.dp
 private val VERTICAL_PADDING = 5.dp
+private val SHADOW_ELEVATION = 5.dp
 
 @Preview
 @Composable
